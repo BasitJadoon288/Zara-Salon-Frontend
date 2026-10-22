@@ -1,0 +1,46 @@
+/* ===== Variables ===== */
+:root {
+  --rose: #b0285a;
+  --dark: #2b1620;
+  --soft: #fdf2f6;
+  --gold: #c9a24b;
+}
+
+/* ===== Reset & base ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Poppins', sans-serif; color: #444; line-height: 1.7; }
+h1, h2, h3, h4 { font-family: 'Playfair Display', serif; color: var(--dark); }
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ===== Page layout (footer hamesha neeche) ===== */
+app-root { display: flex; flex-direction: column; min-height: 100vh; }
+app-header, app-footer { display: block; }
+app-footer { margin-top: auto; }
+
+/* ===== Layout helpers ===== */
+section { padding: 70px 0; }
+.container { width: 100%; max-width: 1160px; margin-inline: auto; padding-inline: 20px; }
+.center { text-align: center; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; }
+
+/* ===== Text ===== */
+.eyebrow { text-transform: uppercase; letter-spacing: 3px; font-size: 13px; color: var(--rose); }
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-block; background: var(--rose); color: #fff; border: 0;
+  padding: 12px 28px; border-radius: 30px; cursor: pointer;
+  font: 500 14px 'Poppins', sans-serif; letter-spacing: 1px; text-transform: uppercase;
+}
+.btn.outline { background: transparent; border: 1px solid #fff; }
+
+/* ===== Forms ===== */
+input, select, textarea {
+  width: 100%; padding: 11px 14px; border: 1px solid #ddd; border-radius: 8px;
+  font: 14px 'Poppins', sans-serif; margin-bottom: 12px;
+}
+
+/* ===== Messages ===== */
+.msg { padding: 10px; border-radius: 8px; margin-bottom: 12px; background: #e8f7ee; color: #1d6b3b; }
+.msg.err { background: #fde8e8; color: #a12222; }
