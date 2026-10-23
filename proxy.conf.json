@@ -1,6 +1,7 @@
 {
-    "/api": {
-        "target": "https://zara-salon-backend.vercel.app/",
-        "secure": false
-    }
+  "/api": {
+    "target": "https://zara-salon-backend-1emt.vercel.app",
+    "secure": true,
+    "changeOrigin": true
+  }
 }
