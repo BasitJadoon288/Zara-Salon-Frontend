@@ -11,7 +11,6 @@ import { Role } from '../../core/models/models';
   template: `<div class="wrap"><div class="box">
     <h1>{{ salon }}</h1>
     <p class="sub">Sign in to the admin portal</p>
-    @if (auth.expired()) { <div class="msg err">You were signed out after 2 minutes of inactivity. Please sign in again.</div> }
     @if (error) { <div class="msg err">{{ error }}</div> }
     <label>Email</label>
     <input type="email" [(ngModel)]="email" autocomplete="username">
