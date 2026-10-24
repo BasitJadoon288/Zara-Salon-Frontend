@@ -1,7 +1,7 @@
 {
   "/api": {
-    "target": "https://zara-salon-backend-1emt.vercel.app",
-    "secure": true,
+    "target": "http://localhost:5000",
+    "secure": false,
     "changeOrigin": true
   }
 }
