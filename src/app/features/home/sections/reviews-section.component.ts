@@ -1,4 +1,3 @@
-
 import {
   Component,
   inject,
@@ -32,8 +31,12 @@ import { REVIEWS } from '../home.data';
             [style.transform]="
               'translateX(-' + currentIndex() * (100 / itemsPerPage()) + '%)'
             "
+            [style.transition]="transitionEnabled()
+              ? 'transform 0.6s ease-in-out'
+              : 'none'"
+            (transitionend)="onTransitionEnd()"
           >
-            @for (r of reviews(); track $index) {
+            @for (r of displayReviews(); track $index) {
               <div
                 class="slide"
                 [style.flex]="'0 0 ' + (100 / itemsPerPage()) + '%'"
@@ -58,7 +61,7 @@ import { REVIEWS } from '../home.data';
               <button
                 type="button"
                 class="dot"
-                [class.active]="currentIndex() === dot"
+                [class.active]="activeDot() === dot"
                 [attr.aria-label]="'Show reviews starting at ' + (dot + 1)"
                 (click)="goToSlide(dot)"
               ></button>
@@ -84,7 +87,6 @@ import { REVIEWS } from '../home.data';
     .track {
       display: flex;
       align-items: stretch;
-      transition: transform 0.6s ease-in-out;
       will-change: transform;
     }
 
@@ -169,14 +171,12 @@ import { REVIEWS } from '../home.data';
 
     @media (prefers-reduced-motion: reduce) {
       .track {
-        transition: none;
+        transition: none !important;
       }
     }
   `]
 })
-export class ReviewsSectionComponent
-  implements OnInit, OnDestroy {
-
+export class ReviewsSectionComponent implements OnInit, OnDestroy {
   private api = inject(SalonApiService);
 
   reviews = signal<Review[]>(
@@ -187,82 +187,128 @@ export class ReviewsSectionComponent
     }))
   );
 
+  displayReviews = signal<Review[]>([]);
   currentIndex = signal(0);
   itemsPerPage = signal(4);
   pageDots = signal<number[]>([]);
+  transitionEnabled = signal(true);
 
   private timer?: ReturnType<typeof setInterval>;
+  private resetTimer?: ReturnType<typeof setTimeout>;
+  private readonly intervalMs = 2000;
+
+  activeDot = signal(0);
 
   ngOnInit(): void {
     this.updateItemsPerPage();
-    this.updateDots();
-    this.startSlider();
-
     this.api.getReviews().subscribe({
       next: list => {
         if (list.length) {
           this.reviews.set(list);
-          this.currentIndex.set(0);
-          this.updateDots();
-          this.startSlider();
         }
+        this.prepareSlider();
+        this.startSlider();
       },
-      error: () => {}
+      error: () => {
+        this.prepareSlider();
+        this.startSlider();
+      }
     });
   }
 
   @HostListener('window:resize')
   onResize(): void {
     this.updateItemsPerPage();
-    this.updateDots();
+    this.prepareSlider();
+    this.startSlider();
   }
 
   private updateItemsPerPage(): void {
     this.itemsPerPage.set(
-      typeof window !== 'undefined' &&
-      window.innerWidth <= 520 ? 2 : 4
+      typeof window !== 'undefined' && window.innerWidth <= 520
+        ? 2
+        : 4
     );
-
-    const maxIndex = Math.max(
-      0,
-      this.reviews().length - this.itemsPerPage()
-    );
-
-    if (this.currentIndex() > maxIndex) {
-      this.currentIndex.set(0);
-    }
   }
 
-  private updateDots(): void {
-    const maxIndex = Math.max(
-      0,
-      this.reviews().length - this.itemsPerPage()
-    );
+  private prepareSlider(): void {
+    const list = this.reviews();
+    const count = list.length;
+    const perPage = this.itemsPerPage();
+
+    this.stopSlider();
+
+    this.transitionEnabled.set(false);
+    this.currentIndex.set(0);
+    this.activeDot.set(0);
+
+    if (count > perPage) {
+      this.displayReviews.set([
+        ...list,
+        ...list.slice(0, perPage)
+      ]);
+    } else {
+      this.displayReviews.set([...list]);
+    }
+
+    const maxIndex = Math.max(0, count - 1);
 
     this.pageDots.set(
       Array.from({ length: maxIndex + 1 }, (_, i) => i)
     );
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.transitionEnabled.set(true);
+      });
+    });
   }
 
   private startSlider(): void {
     this.stopSlider();
 
+    if (this.reviews().length <= this.itemsPerPage()) {
+      return;
+    }
+
     this.timer = setInterval(() => {
-      const maxIndex = Math.max(
-        0,
-        this.reviews().length - this.itemsPerPage()
-      );
+      this.currentIndex.update(index => index + 1);
 
-      if (maxIndex <= 0) return;
-
-      this.currentIndex.update(index =>
-        index >= maxIndex ? 0 : index + 1
+      const nextIndex = this.currentIndex();
+      this.activeDot.set(
+        nextIndex >= this.reviews().length ? 0 : nextIndex
       );
-    }, 2000);
+    }, this.intervalMs);
+  }
+
+  onTransitionEnd(): void {
+    const count = this.reviews().length;
+
+    if (count <= this.itemsPerPage()) return;
+
+    if (this.currentIndex() >= count) {
+      this.transitionEnabled.set(false);
+      this.currentIndex.set(0);
+
+      if (this.resetTimer) {
+        clearTimeout(this.resetTimer);
+      }
+
+      this.resetTimer = setTimeout(() => {
+        this.transitionEnabled.set(true);
+        this.resetTimer = undefined;
+      }, 50);
+    }
   }
 
   goToSlide(index: number): void {
+    const count = this.reviews().length;
+
+    if (index < 0 || index >= count) return;
+
+    this.transitionEnabled.set(true);
     this.currentIndex.set(index);
+    this.activeDot.set(index);
     this.startSlider();
   }
 
@@ -270,6 +316,11 @@ export class ReviewsSectionComponent
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = undefined;
+    }
+
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer);
+      this.resetTimer = undefined;
     }
   }
 
