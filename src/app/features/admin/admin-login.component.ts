@@ -19,7 +19,24 @@ import { Role } from '../../core/models/models';
     <button class="btn" (click)="login()" [disabled]="loading">{{ loading ? 'Signing in...' : 'Sign in' }}</button>
   </div></div>`,
   styles: [`
-  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#2b1620,#5a1d3a)}
+    .wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  background-image:
+    linear-gradient(
+      rgba(43, 22, 32, 0.55),
+      rgba(90, 29, 58, 0.65)
+    ),
+    url('/assets/images/background.jpg');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
   .box{background:#fff;border-radius:16px;padding:34px;width:100%;max-width:400px}
   h1{font-size:26px;color:var(--rose)}
   .sub{margin:4px 0 22px;color:#777}
