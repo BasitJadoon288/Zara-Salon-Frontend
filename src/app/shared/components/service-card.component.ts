@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { SalonService } from '../../core/models/models';
 
 @Component({
@@ -6,8 +6,8 @@ import { SalonService } from '../../core/models/models';
   standalone: true,
   template: `
     <div class="card">
-      @if (showImage) {
-        <img [src]="imageUrl" [alt]="service.title" (error)="showImage = false">
+      @if (imageSrc) {
+        <img [src]="imageSrc" [alt]="service.title" (error)="onImageError()">
       } @else {
         <div class="ic">{{ service.icon }}</div>
       }
@@ -53,11 +53,23 @@ import { SalonService } from '../../core/models/models';
     }
   `]
 })
-export class ServiceCardComponent {
+export class ServiceCardComponent implements OnChanges {
   @Input({ required: true }) service!: SalonService;
-  showImage = true;
 
-  get imageUrl(): string {
+  // 0 = admin ki upload ki hui picture, 1 = assets/images/services/ wali purani picture, 2 = emoji
+  private stage = 1;
+
+  ngOnChanges() { this.stage = this.service.imageUrl ? 0 : 1; }
+
+  get imageSrc(): string | null {
+    if (this.stage === 0) return this.service.imageUrl ?? null;
+    if (this.stage === 1) return this.staticUrl;
+    return null;
+  }
+
+  onImageError() { this.stage++; }
+
+  private get staticUrl(): string {
     const slug = this.service.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')

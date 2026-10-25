@@ -9,7 +9,7 @@ import { StaffUser } from '../../../core/models/models';
   <div class="adm-head"><h2>Staff accounts</h2></div>
   <div class="adm-card">
     <h3>Add a staff member</h3>
-    <p class="adm-note" style="margin-bottom:12px">Staff can sign in and view appointments only. They cannot change anything.</p>
+    <p class="adm-note" style="margin-bottom:12px">Staff can sign in, view appointments and confirm, cancel or set them to pending. They cannot change anything else.</p>
     @if (msg()) { <div class="msg" [class.err]="isErr()">{{ msg() }}</div> }
     <div class="adm-form">
       <label>Name</label><input [(ngModel)]="name" maxlength="60">

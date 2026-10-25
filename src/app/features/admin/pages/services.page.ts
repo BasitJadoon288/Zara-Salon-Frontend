@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../../core/services/salon-api.service';
-import { SalonService } from '../../../core/models/models';
+import { compressImage } from '../../../core/utils/image.util';
+import { SalonService, ServicePayload } from '../../../core/models/models';
 
-const blank = (): SalonService => ({ title: '', description: '', icon: '' });
+const blank = (): SalonService => ({ title: '', description: '', icon: '', visible: true });
 
 @Component({
   selector: 'app-services-page', standalone: true, imports: [FormsModule],
@@ -16,11 +17,22 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '' });
     <div class="adm-form">
       <label>Service name</label><input [(ngModel)]="form.title" maxlength="60">
       <label>Short description</label><textarea rows="3" [(ngModel)]="form.description" maxlength="200"></textarea>
-      <label>Icon (an emoji, shown when the service has no picture)</label><input [(ngModel)]="form.icon" maxlength="4">
-      <p class="adm-note">The service picture is read from <b>assets/images/services/</b> using the service name, for example "Hair Styling" uses hair-styling.jpg. If you rename a service, rename its picture too.</p>
+      <label>Icon (an emoji, shown when the service has no picture)</label><input [(ngModel)]="form.icon" maxlength="12">
+
+      <label>Picture</label>
+      <div class="pic-row">
+        @if (preview()) { <img class="thumb big" [src]="preview()" alt="Preview"> } @else { <div class="thumb big empty">No picture</div> }
+        <div class="pic-actions">
+          <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onFile($event)">
+          @if (preview()) { <button type="button" class="adm-btn ghost sm" (click)="clearPicture()">Remove picture</button> }
+          <span class="adm-note">A landscape picture (4:3) looks best. It is resized automatically.</span>
+        </div>
+      </div>
+
+      <label class="adm-chk"><input type="checkbox" [(ngModel)]="form.visible"> Show on the website</label>
       <div class="adm-row">
-        <button class="adm-btn" (click)="save()">{{ form._id ? 'Save changes' : 'Add service' }}</button>
-        @if (form._id) { <button class="adm-btn ghost" (click)="form = blank()">Cancel</button> }
+        <button class="adm-btn" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : (form._id ? 'Save changes' : 'Add service') }}</button>
+        @if (form._id) { <button class="adm-btn ghost" (click)="reset()">Cancel</button> }
       </div>
     </div>
   </div>
@@ -28,11 +40,17 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '' });
   <div class="adm-card adm-scroll">
     @if (items().length) {
       <table class="adm-table">
-        <tr><th>Icon</th><th>Name</th><th>Description</th><th></th></tr>
+        <tr><th>Picture</th><th>Name</th><th>Description</th><th>On website</th><th></th></tr>
         @for (s of items(); track s._id) {
           <tr>
-            <td>{{ s.icon }}</td><td>{{ s.title }}</td><td>{{ s.description }}</td>
+            <td>
+              @if (s.imageUrl) { <img class="thumb" [src]="s.imageUrl" [alt]="s.title"> }
+              @else { <div class="thumb empty">{{ s.icon || '-' }}</div> }
+            </td>
+            <td>{{ s.title }}</td><td>{{ s.description }}</td>
+            <td><span [class]="'badge ' + (s.visible === false ? 'cancelled' : 'confirmed')">{{ s.visible === false ? 'Hidden' : 'Visible' }}</span></td>
             <td class="adm-row">
+              <button class="adm-btn ghost sm" (click)="toggle(s)">{{ s.visible === false ? 'Show' : 'Hide' }}</button>
               <button class="adm-btn ghost sm" (click)="edit(s)">Edit</button>
               <button class="adm-btn danger sm" (click)="remove(s)">Delete</button>
             </td>
@@ -40,30 +58,71 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '' });
         }
       </table>
     } @else { <div class="adm-empty">No services yet. Add the first one above.</div> }
-  </div>`
+  </div>`,
+  styles: [`
+  .pic-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .pic-actions{display:grid;gap:8px;justify-items:start}
+  .thumb{width:64px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #efdfe6;display:block}
+  .thumb.big{width:160px;height:120px;border-radius:10px}
+  .thumb.empty{display:flex;align-items:center;justify-content:center;background:#fdf2f6;color:#8a7580;font-size:12px;text-align:center}`]
 })
 export class ServicesPage {
   private api = inject(SalonApiService);
   items = signal<SalonService[]>([]);
   form: SalonService = blank();
-  msg = signal(''); isErr = signal(false);
-  blank = blank;
+  newImage = '';          // abhi chuni hui nayi picture (chhoti ki hui)
+  removeImage = false;    // true = save par purani picture hat jayegi
+  msg = signal(''); isErr = signal(false); saving = signal(false);
 
   constructor() { this.load(); }
-  private load() { this.api.getServicesFresh().subscribe(l => this.items.set(l)); }
+  private load() { this.api.getServicesAdmin().subscribe(l => this.items.set(l)); }
   private show(m: string, err = false) { this.msg.set(m); this.isErr.set(err); }
 
+  preview(): string { return this.newImage || (this.removeImage ? '' : this.form.imageUrl || ''); }
+
+  onFile(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.show('Please choose an image file.', true); return; }
+    compressImage(file, { maxSide: 900, maxChars: 550_000 })
+      .then(url => { this.newImage = url; this.removeImage = false; this.msg.set(''); })
+      .catch(() => this.show('Could not use this picture. Try a smaller one.', true));
+    input.value = '';
+  }
+
+  clearPicture() { this.newImage = ''; this.removeImage = true; }
+
+  reset() { this.form = blank(); this.newImage = ''; this.removeImage = false; }
+
   save() {
-    if (!this.form.title.trim() || !this.form.description.trim()) { this.show('Enter the service name and a short description.', true); return; }
-    const wasEdit = !!this.form._id;
-    this.api.saveService(this.form).subscribe({
-      next: () => { this.form = blank(); this.load(); this.show(wasEdit ? 'Service updated.' : 'Service added.'); },
-      error: e => this.show(e.error?.error || 'Could not save the service.', true)
+    const f = this.form;
+    if (!f.title.trim() || !f.description.trim()) { this.show('Enter the service name and a short description.', true); return; }
+    const payload: ServicePayload = { _id: f._id, title: f.title, description: f.description, icon: f.icon, visible: f.visible !== false };
+    if (this.newImage) payload.image = this.newImage;
+    else if (this.removeImage && f.imageUrl) payload.removeImage = true;
+
+    const wasEdit = !!f._id;
+    this.saving.set(true);
+    this.api.saveService(payload).subscribe({
+      next: () => { this.saving.set(false); this.reset(); this.load(); this.show(wasEdit ? 'Service updated.' : 'Service added.'); },
+      error: e => { this.saving.set(false); this.show(e.error?.error || 'Could not save the service.', true); }
     });
   }
-  edit(s: SalonService) { this.form = { ...s }; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  // Hide / Show: sirf visible badalta hai, picture waisi hi rehti hai
+  toggle(s: SalonService) {
+    const payload: ServicePayload = { _id: s._id, title: s.title, description: s.description, icon: s.icon, visible: s.visible === false };
+    this.api.saveService(payload).subscribe({
+      next: () => { this.load(); this.show(payload.visible ? `"${s.title}" is now visible on the website.` : `"${s.title}" is now hidden from the website.`); },
+      error: e => this.show(e.error?.error || 'Could not update the service.', true)
+    });
+  }
+
+  edit(s: SalonService) { this.form = { ...s }; this.newImage = ''; this.removeImage = false; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
   remove(s: SalonService) {
-    if (!confirm(`Delete the service "${s.title}"?`)) return;
+    if (!confirm(`Delete the service "${s.title}"? To only take it off the website, use Hide instead.`)) return;
     this.api.deleteService(s._id!).subscribe(() => { this.load(); this.show('Service deleted.'); });
   }
 }

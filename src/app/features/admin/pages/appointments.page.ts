@@ -9,6 +9,7 @@ import { Appointment, AppointmentStatus } from '../../../core/models/models';
   selector: 'app-appointments-page', standalone: true, imports: [FormsModule],
   template: `
   <div class="adm-head"><h2>Appointments</h2><span class="adm-note">{{ filtered().length }} shown</span></div>
+  @if (msg()) { <div class="msg err">{{ msg() }}</div> }
 
   <div class="adm-card adm-filters">
     <input placeholder="Search name or phone" [ngModel]="q()" (ngModelChange)="q.set($event)">
@@ -29,11 +30,10 @@ import { Appointment, AppointmentStatus } from '../../../core/models/models';
             <td>{{ a.name }}</td><td>{{ a.phone }}</td><td>{{ a.email || '-' }}</td><td>{{ a.service }}</td>
             <td>{{ a.branch }}</td><td>{{ a.date }}</td><td>{{ a.time }}</td>
             <td>
-              @if (isAdmin()) {
-                <select [ngModel]="a.status" (ngModelChange)="setStatus(a, $event)">
-                  <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option>
-                </select>
-              } @else { <span [class]="'badge ' + a.status">{{ a.status }}</span> }
+              <select [ngModel]="a.status" (ngModelChange)="setStatus(a, $event)">
+                <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option>
+              </select>
+              @if (a.statusChangedBy) { <div class="adm-note" style="font-size:12px;margin-top:4px">changed by {{ a.statusChangedBy }}</div> }
             </td>
             @if (isAdmin()) { <td><a class="adm-wa" [href]="waLink(a)" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a></td> }
           </tr>
@@ -49,6 +49,7 @@ export class AppointmentsPage {
 
   all = signal<Appointment[]>([]);
   q = signal(''); status = signal(''); date = signal('');
+  msg = signal('');
 
   filtered = computed(() => {
     const q = this.q().trim().toLowerCase();
@@ -58,12 +59,18 @@ export class AppointmentsPage {
       (!q || a.name.toLowerCase().includes(q) || a.phone.includes(q)));
   });
 
-  constructor() { this.api.getAppointments().subscribe(a => this.all.set(a)); }
+  constructor() { this.load(); }
+  private load() { this.api.getAppointments().subscribe(a => this.all.set(a)); }
 
   clear() { this.q.set(''); this.status.set(''); this.date.set(''); }
 
+  // Admin aur staff dono status badal sakte hain
   setStatus(a: Appointment, s: AppointmentStatus) {
-    this.api.updateStatus(a._id, s).subscribe(() => { a.status = s; this.all.update(l => [...l]); });
+    this.msg.set('');
+    this.api.updateStatus(a._id, s).subscribe({
+      next: () => this.load(), // naya "changed by" bhi dikhe
+      error: e => { this.msg.set(e.error?.error || 'Could not update the status.'); this.load(); }
+    });
   }
 
   waLink(a: Appointment): string {

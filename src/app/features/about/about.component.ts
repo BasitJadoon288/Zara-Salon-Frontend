@@ -7,7 +7,9 @@ import { AboutInfo } from '../../core/models/models';
 @Component({
   selector: 'app-about', standalone: true, imports: [SectionTitleComponent],
   template: `<section class="container"><app-section-title eyebrow="About Us" [title]="about().title" /><br>
-    @for (p of paragraphs(); track $index) { <p style="margin-bottom:14px">{{ p }}</p> }</section>`
+    @if (about().imageUrl; as src) { <img class="pic" [src]="src" alt="About us"> }
+    @for (p of paragraphs(); track $index) { <p style="margin-bottom:14px">{{ p }}</p> }</section>`,
+  styles: [`.pic{display:block;width:100%;max-width:640px;max-height:420px;object-fit:cover;border-radius:16px;margin:0 0 22px}`]
 })
 export class AboutComponent {
   about = signal<AboutInfo>(DEFAULT_ABOUT);
