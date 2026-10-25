@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, catchError, defer, map, of, tap } from "rxjs";
 import {
   AboutInfo, AboutPayload, Appointment, AppointmentPayload, AppointmentStatus, ContactMessage, ContactPayload,
-  LoginResponse, NewsletterPayload, Promo, Review, SalonService, ServicePayload, StaffUser
+  LoginResponse, NewsletterPayload, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
 } from "../models/models";
 import { FALLBACK_SERVICES } from "../config/salon.config";
 
@@ -30,6 +30,10 @@ export class SalonApiService {
   subscribe(data: NewsletterPayload) { return this.http.post(`${this.base}/subscribe`, data); }
   getPromo() { return this.http.get<{ image: string } | null>(`${this.base}/promo`); }
 
+  getSlides() {
+    return this.http.get<Slide[]>(`${this.base}/slides`).pipe(tap({ error: e => console.warn("Could not load slides", e) }));
+  }
+
   // ---------- Auth ----------
   adminLogin(email: string, password: string) { return this.http.post<LoginResponse>(`${this.base}/admin/login`, { email, password }); }
 
@@ -51,6 +55,14 @@ export class SalonApiService {
     return s._id ? this.http.put<SalonService>(`${this.base}/services/${s._id}`, s) : this.http.post<SalonService>(`${this.base}/services`, s);
   }
   deleteService(id: string) { return this.http.delete(`${this.base}/services/${id}`); }
+
+  // ---------- Home slider (admin) ----------
+  getSlidesAdmin() { return this.http.get<Slide[]>(`${this.base}/admin/slides`); } // chhupi hui bhi
+  saveSlide(s: SlidePayload) {
+    return s._id ? this.http.put<Slide>(`${this.base}/slides/${s._id}`, s) : this.http.post<Slide>(`${this.base}/slides`, s);
+  }
+  deleteSlide(id: string) { return this.http.delete(`${this.base}/slides/${id}`); }
+  reorderSlides(ids: string[]) { return this.http.put<Slide[]>(`${this.base}/slides/order`, { ids }); }
 
   // ---------- About (admin) ----------
   saveAbout(a: AboutPayload) { return this.http.put<AboutInfo>(`${this.base}/about`, a); }

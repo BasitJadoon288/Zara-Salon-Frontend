@@ -21,6 +21,7 @@ export const routes: Routes = [
       { path: "appointments", loadComponent: () => admin().then(m => m.AppointmentsPage) },
       { path: "reviews", canActivate: adminOnly, loadComponent: () => admin().then(m => m.ReviewsPage) },
       { path: "services", canActivate: adminOnly, loadComponent: () => admin().then(m => m.ServicesPage) },
+      { path: "slider", canActivate: adminOnly, loadComponent: () => admin().then(m => m.SliderPage) },
       { path: "about", canActivate: adminOnly, loadComponent: () => admin().then(m => m.AboutPage) },
       { path: "rate-list", canActivate: adminOnly, loadComponent: () => admin().then(m => m.RateListPage) },
       { path: "messages", canActivate: adminOnly, loadComponent: () => admin().then(m => m.MessagesPage) },

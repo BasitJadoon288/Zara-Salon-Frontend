@@ -11,6 +11,7 @@ const NAV: NavItem[] = [
   { label: 'Appointments', path: 'appointments', icon: 'fa-solid fa-calendar-check', roles: ['admin', 'staff'] },
   { label: 'Reviews', path: 'reviews', icon: 'fa-solid fa-star', roles: ['admin'] },
   { label: 'Services', path: 'services', icon: 'fa-solid fa-spa', roles: ['admin'] },
+  { label: 'Home slider', path: 'slider', icon: 'fa-solid fa-images', roles: ['admin'] },
   { label: 'About page', path: 'about', icon: 'fa-solid fa-circle-info', roles: ['admin'] },
   { label: 'Rate list popup', path: 'rate-list', icon: 'fa-solid fa-tags', roles: ['admin'] },
   { label: 'Messages', path: 'messages', icon: 'fa-solid fa-envelope', roles: ['admin'] },

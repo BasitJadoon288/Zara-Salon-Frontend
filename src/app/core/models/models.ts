@@ -15,3 +15,7 @@ export interface Review { _id?: string; name: string; text: string; rating: numb
 export interface AboutInfo { title: string; text: string; imageUrl?: string | null; }
 export interface AboutPayload { title: string; text: string; image?: string; removeImage?: boolean; }
 export interface StaffUser { _id: string; name: string; email: string; role: Role; }
+
+export interface Slide { _id?: string; title: string; text: string; visible?: boolean; order?: number; imageUrl?: string | null; }
+// Slide save karte waqt: image = nayi picture (naye slide ke liye zaroori), na bhejein = picture waisi hi
+export interface SlidePayload { _id?: string; title: string; text: string; visible?: boolean; image?: string; }
