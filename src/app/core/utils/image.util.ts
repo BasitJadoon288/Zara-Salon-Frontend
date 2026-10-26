@@ -31,3 +31,22 @@ export function compressImage(file: File, opts: { maxSide: number; maxChars: num
     reader.readAsDataURL(file);
   });
 }
+
+// Chuni hui picture ki asli size batata hai. Sirf jankari ke liye: upload ko kabhi nahi rokta.
+export function checkImageSize(file: File, minWidth: number): Promise<{ text: string; warn: boolean }> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const small = w < minWidth;
+      resolve({
+        text: `Selected picture: ${w} × ${h} px.` + (small ? ` This is small and may look blurry. Please use a picture at least ${minWidth} px wide.` : ' Size is fine.'),
+        warn: small
+      });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve({ text: '', warn: false }); };
+    img.src = url;
+  });
+}

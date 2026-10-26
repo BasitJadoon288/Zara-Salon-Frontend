@@ -2,7 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../../core/services/salon-api.service';
 import { DEFAULT_ABOUT } from '../../../core/config/about.default';
-import { compressImage } from '../../../core/utils/image.util';
+import { checkImageSize, compressImage } from '../../../core/utils/image.util';
+import { IMAGE_SIZES } from '../../../core/config/image-sizes';
 import { AboutInfo, AboutPayload } from '../../../core/models/models';
 
 @Component({
@@ -22,7 +23,9 @@ import { AboutInfo, AboutPayload } from '../../../core/models/models';
         <div class="pic-actions">
           <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onFile($event)">
           @if (preview()) { <button type="button" class="adm-btn ghost sm" (click)="clearPicture()">Remove picture</button> }
-          <span class="adm-note">It is resized automatically.</span>
+          <span class="adm-note"><b>Recommended size: {{ size.label }}</b> ({{ size.shape }}). It is shown beside the About text on the home page, and above the text on the About page.</span>
+          <span class="adm-note">JPG, PNG or WEBP. Bigger pictures are made smaller automatically.</span>
+          @if (sizeInfo()) { <span class="adm-note" [style.color]="sizeWarn() ? '#a12222' : '#1d6b3b'">{{ sizeInfo() }}</span> }
         </div>
       </div>
 
@@ -41,6 +44,8 @@ export class AboutPage {
   form: AboutInfo = { ...DEFAULT_ABOUT, imageUrl: null };
   newImage = '';
   removeImage = false;
+  size = IMAGE_SIZES.about;
+  sizeInfo = signal(''); sizeWarn = signal(false);
   msg = signal(''); isErr = signal(false); saving = signal(false);
 
   constructor() { this.api.getAbout().subscribe({ next: a => { if (a) this.form = { ...a }; }, error: () => {} }); }
@@ -54,13 +59,14 @@ export class AboutPage {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { this.show('Please choose an image file.', true); return; }
+    checkImageSize(file, this.size.minWidth).then(r => { this.sizeInfo.set(r.text); this.sizeWarn.set(r.warn); });
     compressImage(file, { maxSide: 1400, maxChars: 1_300_000 })
       .then(url => { this.newImage = url; this.removeImage = false; this.msg.set(''); })
       .catch(() => this.show('Could not use this picture. Try a smaller one.', true));
     input.value = '';
   }
 
-  clearPicture() { this.newImage = ''; this.removeImage = true; }
+  clearPicture() { this.newImage = ''; this.removeImage = true; this.sizeInfo.set(''); }
 
   save() {
     if (!this.form.title.trim() || !this.form.text.trim()) { this.show('Enter a heading and some text.', true); return; }

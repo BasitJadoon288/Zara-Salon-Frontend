@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../../core/services/salon-api.service';
-import { compressImage } from '../../../core/utils/image.util';
+import { checkImageSize, compressImage } from '../../../core/utils/image.util';
+import { IMAGE_SIZES } from '../../../core/config/image-sizes';
 import { SalonService, ServicePayload } from '../../../core/models/models';
 
 const blank = (): SalonService => ({ title: '', description: '', icon: '', visible: true });
@@ -25,7 +26,9 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '', visib
         <div class="pic-actions">
           <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onFile($event)">
           @if (preview()) { <button type="button" class="adm-btn ghost sm" (click)="clearPicture()">Remove picture</button> }
-          <span class="adm-note">A landscape picture (4:3) looks best. It is resized automatically.</span>
+          <span class="adm-note"><b>Recommended size: {{ size.label }}</b> ({{ size.shape }}). This picture is shown at the top of the service card on the website. Keep the main subject in the upper half.</span>
+          <span class="adm-note">JPG, PNG or WEBP. Bigger pictures are made smaller automatically.</span>
+          @if (sizeInfo()) { <span class="adm-note" [style.color]="sizeWarn() ? '#a12222' : '#1d6b3b'">{{ sizeInfo() }}</span> }
         </div>
       </div>
 
@@ -72,6 +75,8 @@ export class ServicesPage {
   form: SalonService = blank();
   newImage = '';          // abhi chuni hui nayi picture (chhoti ki hui)
   removeImage = false;    // true = save par purani picture hat jayegi
+  size = IMAGE_SIZES.service;
+  sizeInfo = signal(''); sizeWarn = signal(false);
   msg = signal(''); isErr = signal(false); saving = signal(false);
 
   constructor() { this.load(); }
@@ -85,15 +90,16 @@ export class ServicesPage {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { this.show('Please choose an image file.', true); return; }
+    checkImageSize(file, this.size.minWidth).then(r => { this.sizeInfo.set(r.text); this.sizeWarn.set(r.warn); });
     compressImage(file, { maxSide: 900, maxChars: 550_000 })
       .then(url => { this.newImage = url; this.removeImage = false; this.msg.set(''); })
       .catch(() => this.show('Could not use this picture. Try a smaller one.', true));
     input.value = '';
   }
 
-  clearPicture() { this.newImage = ''; this.removeImage = true; }
+  clearPicture() { this.newImage = ''; this.removeImage = true; this.sizeInfo.set(''); }
 
-  reset() { this.form = blank(); this.newImage = ''; this.removeImage = false; }
+  reset() { this.form = blank(); this.newImage = ''; this.removeImage = false; this.sizeInfo.set(''); }
 
   save() {
     const f = this.form;
@@ -119,7 +125,7 @@ export class ServicesPage {
     });
   }
 
-  edit(s: SalonService) { this.form = { ...s }; this.newImage = ''; this.removeImage = false; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  edit(s: SalonService) { this.form = { ...s }; this.newImage = ''; this.removeImage = false; this.sizeInfo.set(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   remove(s: SalonService) {
     if (!confirm(`Delete the service "${s.title}"? To only take it off the website, use Hide instead.`)) return;

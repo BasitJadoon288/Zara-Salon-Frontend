@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../../core/services/salon-api.service';
-import { compressImage } from '../../../core/utils/image.util';
+import { checkImageSize, compressImage } from '../../../core/utils/image.util';
+import { IMAGE_SIZES } from '../../../core/config/image-sizes';
 import { Slide, SlidePayload } from '../../../core/models/models';
 
 const MAX_SLIDES = 8;
@@ -21,7 +22,9 @@ const blank = (): Slide => ({ title: '', text: '', visible: true });
         @if (preview()) { <img class="thumb big" [src]="preview()" alt="Preview"> } @else { <div class="thumb big empty">No picture</div> }
         <div class="pic-actions">
           <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onFile($event)">
-          <span class="adm-note">Use a wide landscape picture (for example 1920 x 800). It is resized automatically.</span>
+          <span class="adm-note"><b>Recommended size: {{ size.label }}</b> ({{ size.shape }}). This picture fills the whole banner at the top of the home page. Keep the important part in the middle, because the edges are cropped on phones.</span>
+          <span class="adm-note">JPG, PNG or WEBP. Bigger pictures are made smaller automatically.</span>
+          @if (sizeInfo()) { <span class="adm-note" [style.color]="sizeWarn() ? '#a12222' : '#1d6b3b'">{{ sizeInfo() }}</span> }
         </div>
       </div>
       <label>Heading (optional)</label><input [(ngModel)]="form.title" maxlength="80">
@@ -70,6 +73,8 @@ export class SliderPage {
   items = signal<Slide[]>([]);
   form: Slide = blank();
   newImage = '';
+  size = IMAGE_SIZES.slider;
+  sizeInfo = signal(''); sizeWarn = signal(false);
   msg = signal(''); isErr = signal(false); saving = signal(false);
 
   constructor() { this.load(); }
@@ -83,13 +88,14 @@ export class SliderPage {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { this.show('Please choose an image file.', true); return; }
+    checkImageSize(file, this.size.minWidth).then(r => { this.sizeInfo.set(r.text); this.sizeWarn.set(r.warn); });
     compressImage(file, { maxSide: 1600, maxChars: 900_000 })
       .then(url => { this.newImage = url; this.msg.set(''); })
       .catch(() => this.show('Could not use this picture. Try a smaller one.', true));
     input.value = '';
   }
 
-  reset() { this.form = blank(); this.newImage = ''; }
+  reset() { this.form = blank(); this.newImage = ''; this.sizeInfo.set(''); }
 
   save() {
     const f = this.form;
@@ -127,7 +133,7 @@ export class SliderPage {
     });
   }
 
-  edit(s: Slide) { this.form = { ...s }; this.newImage = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  edit(s: Slide) { this.form = { ...s }; this.newImage = ''; this.sizeInfo.set(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   remove(s: Slide) {
     if (!confirm('Delete this slide? To only take it off the website, use Hide instead.')) return;
