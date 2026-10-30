@@ -26,7 +26,7 @@ const empty = (): AppointmentPayload => ({ name: '', phone: '', email: '', branc
   </div></div> }`,
   styles: [`
   .overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
-  .box{background:#fff;padding:30px;border-radius:14px;width:100%;max-width:480px;max-height:92vh;overflow:auto}
+  .box{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--card-ring);padding:30px;border-radius:14px;width:100%;max-width:480px;max-height:92vh;overflow:auto}
   h2{margin-bottom:16px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grey{background:#999;margin-left:8px}`]
 })
 export class BookingModalComponent {

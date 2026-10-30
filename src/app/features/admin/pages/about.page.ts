@@ -25,7 +25,7 @@ import { AboutInfo, AboutPayload } from '../../../core/models/models';
           @if (preview()) { <button type="button" class="adm-btn ghost sm" (click)="clearPicture()">Remove picture</button> }
           <span class="adm-note"><b>Recommended size: {{ size.label }}</b> ({{ size.shape }}). It is shown beside the About text on the home page, and above the text on the About page.</span>
           <span class="adm-note">JPG, PNG or WEBP. Bigger pictures are made smaller automatically.</span>
-          @if (sizeInfo()) { <span class="adm-note" [style.color]="sizeWarn() ? '#a12222' : '#1d6b3b'">{{ sizeInfo() }}</span> }
+          @if (sizeInfo()) { <span class="adm-note" [style.color]="sizeWarn() ? 'var(--msg-bad-ink)' : 'var(--msg-ok-ink)'">{{ sizeInfo() }}</span> }
         </div>
       </div>
 
@@ -36,8 +36,8 @@ import { AboutInfo, AboutPayload } from '../../../core/models/models';
   styles: [`
   .pic-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
   .pic-actions{display:grid;gap:8px;justify-items:start}
-  .thumb{width:220px;height:150px;object-fit:cover;border-radius:10px;border:1px solid #efdfe6;display:block}
-  .thumb.empty{display:flex;align-items:center;justify-content:center;background:#fdf2f6;color:#8a7580;font-size:13px}`]
+  .thumb{width:220px;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--adm-line);display:block}
+  .thumb.empty{display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--adm-muted);font-size:13px}`]
 })
 export class AboutPage {
   private api = inject(SalonApiService);

@@ -7,6 +7,7 @@ import { FooterComponent } from "./shared/components/footer.component";
 import { BookingModalComponent } from "./shared/components/booking-modal.component";
 import { SocialBarComponent } from "./shared/components/social-bar.component";
 import { PromoPopupComponent } from "./shared/components/promo-popup.component";
+import { ThemeService } from "./core/services/theme.service";
 
 @Component({
   selector: "app-root", standalone: true,
@@ -21,6 +22,7 @@ export class AppComponent {
   isAdmin = signal(window.location.pathname.startsWith("/admin"));
 
   constructor() {
+    inject(ThemeService); // saved dark / light pasand lagata hai
     inject(Router).events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       takeUntilDestroyed()

@@ -5,10 +5,11 @@ import { SalonApiService } from '../../core/services/salon-api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SALON } from '../../core/config/salon.config';
 import { Role } from '../../core/models/models';
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
 
 @Component({
-  selector: 'app-admin-login', standalone: true, imports: [FormsModule],
-  template: `<div class="wrap"><div class="box">
+  selector: 'app-admin-login', standalone: true, imports: [FormsModule, ThemeToggleComponent],
+  template: `<div class="wrap"><app-theme-toggle class="corner" [onDark]="true" /><div class="box">
     <h1>{{ salon }}</h1>
     <p class="sub">Sign in to the admin portal</p>
     @if (error) { <div class="msg err">{{ error }}</div> }
@@ -37,10 +38,11 @@ import { Role } from '../../core/models/models';
   background-position: center;
   background-repeat: no-repeat;
 }
-  .box{background:#fff;border-radius:16px;padding:34px;width:100%;max-width:400px}
-  h1{font-size:26px;color:var(--rose)}
-  .sub{margin:4px 0 22px;color:#777}
-  label{display:block;font-size:13px;margin-bottom:6px;color:#555}
+  .corner{position:fixed;top:16px;right:16px;z-index:2}
+  .box{background:var(--surface);box-shadow:0 0 0 1px var(--card-ring);border-radius:16px;padding:34px;width:100%;max-width:400px}
+  h1{font-size:26px;color:var(--rose-ink)}
+  .sub{margin:4px 0 22px;color:var(--muted)}
+  label{display:block;font-size:13px;margin-bottom:6px;color:var(--text)}
   .btn{width:100%;margin-top:6px;text-transform:none;letter-spacing:0;font-size:15px}`]
 })
 export class AdminLoginComponent {

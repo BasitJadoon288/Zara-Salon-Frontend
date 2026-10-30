@@ -19,10 +19,10 @@ import { SalonService } from '../../core/models/models';
     :host { display: block; }
 
     .card {
-      background: #fff;
+      background: var(--surface);
       padding: 20px;
       border-radius: 14px;
-      box-shadow: 0 6px 22px #0001;
+      box-shadow: 0 6px 22px var(--shadow), 0 0 0 1px var(--card-ring);
       transition: .3s;
       height: 100%;
       box-sizing: border-box;

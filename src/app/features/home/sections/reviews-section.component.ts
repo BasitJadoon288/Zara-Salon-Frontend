@@ -99,10 +99,10 @@ import { REVIEWS } from '../home.data';
     .card {
       height: 100%;
       box-sizing: border-box;
-      background: #fff;
+      background: var(--surface);
       padding: 26px;
       border-radius: 14px;
-      box-shadow: 0 6px 22px #0001;
+      box-shadow: 0 6px 22px var(--shadow), 0 0 0 1px var(--card-ring);
       overflow-wrap: anywhere;
     }
 
@@ -134,7 +134,7 @@ import { REVIEWS } from '../home.data';
       padding: 0;
       border: none;
       border-radius: 50%;
-      background: #c8c8c8;
+      background: var(--dot);
       cursor: pointer;
       transition: background 0.3s ease;
     }

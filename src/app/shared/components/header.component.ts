@@ -2,11 +2,12 @@ import { Component, inject, signal, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { BookingModalService } from '../../core/services/booking-modal.service';
 import { SALON } from '../../core/config/salon.config';
+import { ThemeToggleComponent } from './theme-toggle.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, ThemeToggleComponent],
   template: `
     <header>
       <div class="container bar">
@@ -31,6 +32,7 @@ import { SALON } from '../../core/config/salon.config';
           <span></span>
         </button>
 
+        <div class="right">
         <nav id="main-nav" [class.open]="menuOpen()">
           <a routerLink="/" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Home</a>
           <a routerLink="/about" routerLinkActive="on" (click)="closeMenu()">About Us</a>
@@ -38,6 +40,8 @@ import { SALON } from '../../core/config/salon.config';
           <a routerLink="/contact" routerLinkActive="on" (click)="closeMenu()">Contact</a>
           <button class="btn" type="button" (click)="bookAppointment()">Appointment</button>
         </nav>
+        <app-theme-toggle />
+        </div>
       </div>
     </header>
   `,
@@ -48,8 +52,8 @@ import { SALON } from '../../core/config/salon.config';
     header {
       position: sticky;
       top: 0;
-      background: #fff;
-      box-shadow: 0 2px 12px #0001;
+      background: var(--surface);
+      box-shadow: 0 2px 12px var(--shadow), 0 1px 0 var(--card-ring);
       z-index: 50;
     }
 
@@ -69,7 +73,7 @@ import { SALON } from '../../core/config/salon.config';
       font-family: 'Great Vibes', 'Dancing Script', cursive !important;
       font-size: 38px !important;
       font-weight: 500 !important;
-      color: var(--rose, #b02a5b) !important;
+      color: var(--rose-ink) !important;
       letter-spacing: 1px;
       line-height: 1;
       display: inline-block;
@@ -81,9 +85,10 @@ import { SALON } from '../../core/config/salon.config';
       text-transform: uppercase;
       letter-spacing: 1px;
       text-decoration: none;
-      color: #333;
+      color: var(--text-strong);
     }
-    nav a.on, nav a:hover { color: var(--rose, #b02a5b); }
+    nav a.on, nav a:hover { color: var(--rose-ink); }
+    .right { display: flex; align-items: center; gap: 22px; }
 
     /* Hamburger button - hidden on desktop */
     .menu-toggle {
@@ -103,7 +108,7 @@ import { SALON } from '../../core/config/salon.config';
       display: block;
       height: 2px;
       width: 100%;
-      background: #333;
+      background: var(--text-strong);
       border-radius: 2px;
       transition: transform .3s ease, opacity .3s ease;
     }
@@ -117,7 +122,8 @@ import { SALON } from '../../core/config/salon.config';
       .logo img { height: 44px; }
       .stylish-brand { font-size: 30px !important; }
 
-      .menu-toggle { display: flex; }
+      .menu-toggle { display: flex; order: 3; }
+      .right { order: 2; margin-left: auto; gap: 8px; }
 
       nav {
         position: absolute;
@@ -127,8 +133,8 @@ import { SALON } from '../../core/config/salon.config';
         flex-direction: column;
         align-items: stretch;
         gap: 0;
-        background: #fff;
-        box-shadow: 0 10px 20px #0002;
+        background: var(--surface);
+        box-shadow: 0 10px 20px var(--shadow);
         max-height: 0;
         overflow: hidden;
         opacity: 0;
@@ -144,7 +150,7 @@ import { SALON } from '../../core/config/salon.config';
       nav a {
         padding: 16px 20px;
         font-size: 15px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--line-soft);
       }
 
       nav .btn {

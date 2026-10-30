@@ -1,0 +1,158 @@
+/* ===== Theme tokens: light (default) and dark =====
+   Light values are exactly the old colours, so the light look does not change.
+   Dark mode is switched by  <html data-theme="dark">  (see ThemeService). */
+:root {
+  color-scheme: light;
+
+  /* brand */
+  --rose: #b0285a;
+  --dark: #2b1620;          /* footer, admin sidebar: dark in both themes */
+  --soft: #fdf2f6;          /* soft section background */
+  --gold: #c9a24b;
+
+  /* surfaces and text */
+  --bg: #ffffff;
+  --surface: #ffffff;       /* header, cards, modals */
+  --text: #444444;
+  --text-strong: #333333;   /* menu links, hamburger */
+  --heading: #2b1620;
+  --muted: #6b5560;
+  --rose-ink: #b0285a;      /* rose used as TEXT */
+  --line: #e6d3dc;
+  --line-soft: #f0f0f0;
+  --shadow: #0001;
+  --card-ring: transparent; /* thin outline around cards (only visible in dark) */
+  --dot: #c8c8c8;
+
+  /* form fields */
+  --field-bg: #ffffff;
+  --field-line: #dddddd;
+
+  /* message boxes */
+  --msg-ok-bg: #e8f7ee;  --msg-ok-ink: #1d6b3b;
+  --msg-bad-bg: #fde8e8; --msg-bad-ink: #a12222;
+
+  /* admin portal */
+  --adm-bg: #faf5f7;
+  --adm-text: #3a2a31;
+  --adm-line: #efdfe6;
+  --adm-line-2: #f1e5ea;
+  --adm-th-bg: #fdf2f6;
+  --adm-th-ink: #6b5560;
+  --adm-label: #6b5560;
+  --adm-muted: #8a7580;
+  --adm-ghost-line: #e3c3d0;
+  --adm-stat-line: #d9c3cc;
+  --adm-photo-bg: #fafafa;
+  --bd-pend-bg: #fff3d6; --bd-pend-ink: #8a5a00;
+  --bd-ok-bg: #dff5e6;   --bd-ok-ink: #1d6b3b;
+  --bd-bad-bg: #fde8e8;  --bd-bad-ink: #a12222;
+
+  /* dashboard page (own palette: one variable per colour and role) */
+  --dm-bd-B3265B: #B3265B;
+  --dm-bd-E6B8CC: #E6B8CC;
+  --dm-bd-EEDCE4: #EEDCE4;
+  --dm-bd-F0C8D5: #F0C8D5;
+  --dm-bd-F1E1E8: #F1E1E8;
+  --dm-bd-F5E5ED: #F5E5ED;
+  --dm-bg-24A477: #24A477;
+  --dm-bg-B3265B: #B3265B;
+  --dm-bg-E36B7C: #E36B7C;
+  --dm-bg-E6F8EF: #E6F8EF;
+  --dm-bg-E7F8EF: #E7F8EF;
+  --dm-bg-E9A82E: #E9A82E;
+  --dm-bg-EED0DD: #EED0DD;
+  --dm-bg-F1E1E8: #F1E1E8;
+  --dm-bg-FAF4F7: #FAF4F7;
+  --dm-bg-FBEAF1: #FBEAF1;
+  --dm-bg-FBEFF3: #FBEFF3;
+  --dm-bg-FFF0F2: #FFF0F2;
+  --dm-bg-FFF5DC: #FFF5DC;
+  --dm-bg-FFF5DF: #FFF5DF;
+  --dm-bg-FFF7F9: #FFF7F9;
+  --dm-bg-FFFAFC: #FFFAFC;
+  --dm-bg-FFFFFF: #FFFFFF;
+  --dm-text-198458: #198458;
+  --dm-text-239A6A: #239A6A;
+  --dm-text-2D1721: #2D1721;
+  --dm-text-765563: #765563;
+  --dm-text-8B7580: #8B7580;
+  --dm-text-A18D97: #A18D97;
+  --dm-text-A91F50: #A91F50;
+  --dm-text-B3265B: #B3265B;
+  --dm-text-B47B11: #B47B11;
+  --dm-text-C68A17: #C68A17;
+  --dm-text-CF4C63: #CF4C63;
+  --dm-text-D94F66: #D94F66;
+  --dm-text-FFFFFF: #FFFFFF;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --soft: #1b1017;
+  --bg: #140c11;
+  --surface: #231721;
+  --text: #dccdd5;
+  --text-strong: #f6ebf1;
+  --heading: #f6ebf1;
+  --muted: #b9a5b0;
+  --rose-ink: #f27aa4;
+  --line: #3b2735;
+  --line-soft: #2e1e29;
+  --shadow: #0008;
+  --card-ring: #3b2735;
+  --dot: #5a4552;
+
+  --field-bg: #1b1017;
+  --field-line: #4a3443;
+
+  --msg-ok-bg: #11332a;  --msg-ok-ink: #7be3b1;
+  --msg-bad-bg: #3d1822; --msg-bad-ink: #ff9fae;
+
+  --adm-bg: #100a0e;
+  --adm-text: #dccdd5;
+  --adm-line: #3b2735;
+  --adm-line-2: #2e1e29;
+  --adm-th-bg: #2a1a26;
+  --adm-th-ink: #d3bfc9;
+  --adm-label: #d3bfc9;
+  --adm-muted: #b9a5b0;
+  --adm-ghost-line: #5a3a4c;
+  --adm-stat-line: #5a3a4c;
+  --adm-photo-bg: #1b1017;
+  --bd-pend-bg: #3a2e12; --bd-pend-ink: #f2c35f;
+  --bd-ok-bg: #11332a;   --bd-ok-ink: #7be3b1;
+  --bd-bad-bg: #3d1822;  --bd-bad-ink: #ff9fae;
+
+  --dm-bd-E6B8CC: #6B3F55;
+  --dm-bd-EEDCE4: #3B2735;
+  --dm-bd-F0C8D5: #6B3A4C;
+  --dm-bd-F1E1E8: #2E1E29;
+  --dm-bd-F5E5ED: #3B2735;
+  --dm-bg-E6F8EF: #12342A;
+  --dm-bg-E7F8EF: #12342A;
+  --dm-bg-EED0DD: #5A3045;
+  --dm-bg-F1E1E8: #3A2633;
+  --dm-bg-FAF4F7: #100A0E;
+  --dm-bg-FBEAF1: #3B1D2D;
+  --dm-bg-FBEFF3: #2B1925;
+  --dm-bg-FFF0F2: #3D1822;
+  --dm-bg-FFF5DC: #3A2E12;
+  --dm-bg-FFF5DF: #3A2E12;
+  --dm-bg-FFF7F9: #3A1B25;
+  --dm-bg-FFFAFC: #261620;
+  --dm-bg-FFFFFF: #231721;
+  --dm-text-198458: #62D6A4;
+  --dm-text-239A6A: #5ED3A0;
+  --dm-text-2D1721: #F4E9EF;
+  --dm-text-765563: #CDB9C3;
+  --dm-text-8B7580: #AD97A3;
+  --dm-text-A18D97: #8F7A86;
+  --dm-text-A91F50: #FF8FB0;
+  --dm-text-B3265B: #F07BA3;
+  --dm-text-B47B11: #F0BE5A;
+  --dm-text-C68A17: #F0BE5A;
+  --dm-text-CF4C63: #FF8CA0;
+  --dm-text-D94F66: #FF8497;
+}
