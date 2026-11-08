@@ -8,3 +8,4 @@ export { AboutPage } from './pages/about.page';
 export { RateListPage } from './pages/rate-list.page';
 export { MessagesPage } from './pages/messages.page';
 export { StaffPage } from './pages/staff.page';
+export { TimingPage } from './pages/timing.page';

@@ -2,8 +2,8 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, catchError, defer, map, of, tap } from "rxjs";
 import {
-  AboutInfo, AboutPayload, Appointment, AppointmentPayload, AppointmentStatus, ContactMessage, ContactPayload,
-  LoginResponse, NewsletterPayload, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
+  AboutInfo, AboutPayload, Appointment, Availability, AppointmentPayload, AppointmentStatus, ContactMessage, ContactPayload,
+  LoginResponse, NewsletterPayload, TimingSettings, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
 } from "../models/models";
 import { FALLBACK_SERVICES } from "../config/salon.config";
 
@@ -24,6 +24,10 @@ export class SalonApiService {
   }
   getAbout() {
     return this.http.get<AboutInfo | null>(`${this.base}/about`).pipe(tap({ error: e => console.warn("Could not load about", e) }));
+  }
+  // Is branch / service / date ke time slots: kaun sa khali hai, kaun sa booked
+  getAvailability(branch: string, service: string, date: string) {
+    return this.http.get<Availability>(`${this.base}/appointments/availability`, { params: { branch, service, date } });
   }
   bookAppointment(data: AppointmentPayload) { return this.http.post(`${this.base}/appointments`, data); }
   sendContact(data: ContactPayload) { return this.http.post(`${this.base}/contacts`, data); }
@@ -55,6 +59,12 @@ export class SalonApiService {
     return s._id ? this.http.put<SalonService>(`${this.base}/services/${s._id}`, s) : this.http.post<SalonService>(`${this.base}/services`, s);
   }
   deleteService(id: string) { return this.http.delete(`${this.base}/services/${id}`); }
+
+  // ---------- Salon timing (admin) ----------
+  getTiming() { return this.http.get<TimingSettings>(`${this.base}/admin/timing`); }
+  saveTiming(t: TimingSettings) {
+    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime: t.openTime, closeTime: t.closeTime, slotStep: t.slotStep, chairs: t.chairs });
+  }
 
   // ---------- Home slider (admin) ----------
   getSlidesAdmin() { return this.http.get<Slide[]>(`${this.base}/admin/slides`); } // chhupi hui bhi

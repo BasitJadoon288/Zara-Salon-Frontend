@@ -4,6 +4,7 @@ import { SalonApiService } from '../../../core/services/salon-api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SALON } from '../../../core/config/salon.config';
 import { Appointment, AppointmentStatus } from '../../../core/models/models';
+import { endTime, formatDuration } from '../../../core/utils/duration.util';
 
 @Component({
   selector: 'app-appointments-page', standalone: true, imports: [FormsModule],
@@ -28,7 +29,7 @@ import { Appointment, AppointmentStatus } from '../../../core/models/models';
         @for (a of filtered(); track a._id) {
           <tr>
             <td>{{ a.name }}</td><td>{{ a.phone }}</td><td>{{ a.email || '-' }}</td><td>{{ a.service }}</td>
-            <td>{{ a.branch }}</td><td>{{ a.date }}</td><td>{{ a.time }}</td>
+            <td>{{ a.branch }}</td><td>{{ a.date }}</td><td>{{ a.time }} - {{ end(a) }}<div class="adm-note" style="font-size:12px">{{ fmt(a.duration || 60) }}</div></td>
             <td>
               <select [ngModel]="a.status" (ngModelChange)="setStatus(a, $event)">
                 <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option>
@@ -45,6 +46,8 @@ import { Appointment, AppointmentStatus } from '../../../core/models/models';
 export class AppointmentsPage {
   private api = inject(SalonApiService);
   private auth = inject(AuthService);
+  fmt = formatDuration;
+  end = (a: Appointment) => endTime(a.time, a.duration);
   isAdmin = computed(() => this.auth.role() === 'admin');
 
   all = signal<Appointment[]>([]);
@@ -76,7 +79,7 @@ export class AppointmentsPage {
   waLink(a: Appointment): string {
     let n = a.phone.replace(/\D/g, '');
     if (n.startsWith('0')) n = '92' + n.slice(1);
-    const detail = `${a.service} at ${a.branch} on ${a.date} at ${a.time}`;
+    const detail = `${a.service} at ${a.branch} on ${a.date} from ${a.time} to ${this.end(a)}`;
     const text = a.status === 'confirmed'
       ? `Assalam o Alaikum ${a.name}, your appointment for ${detail} is confirmed. - ${SALON.name}`
       : a.status === 'cancelled'

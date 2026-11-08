@@ -18,7 +18,7 @@ export const SOCIAL = {
 export const BRANCHES = ['Gulshan Branch', 'North Nazimabad Branch', 'Tariq Road Branch'];
 
 export const FALLBACK_SERVICES: SalonService[] = [
-  { title: 'Bridal Makeup', description: 'Classic, traditional or modern bridal looks.', icon: '👰' },
-  { title: 'Hair Styling', description: 'Cuts, colour and trendy styles.', icon: '💇‍♀️' },
-  { title: 'Facial & Therapy', description: 'Deep-cleansing facials.', icon: '✨' }
+  { title: 'Bridal Makeup', description: 'Classic, traditional or modern bridal looks.', icon: '👰', duration: 180 },
+  { title: 'Hair Styling', description: 'Cuts, colour and trendy styles.', icon: '💇‍♀️', duration: 60 },
+  { title: 'Facial & Therapy', description: 'Deep-cleansing facials.', icon: '✨', duration: 60 }
 ];

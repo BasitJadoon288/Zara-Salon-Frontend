@@ -4,8 +4,9 @@ import { SalonApiService } from '../../../core/services/salon-api.service';
 import { checkImageSize, compressImage } from '../../../core/utils/image.util';
 import { IMAGE_SIZES } from '../../../core/config/image-sizes';
 import { SalonService, ServicePayload } from '../../../core/models/models';
+import { formatDuration } from '../../../core/utils/duration.util';
 
-const blank = (): SalonService => ({ title: '', description: '', icon: '', visible: true });
+const blank = (): SalonService => ({ title: '', description: '', icon: '', duration: 60, visible: true });
 
 @Component({
   selector: 'app-services-page', standalone: true, imports: [FormsModule],
@@ -18,6 +19,9 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '', visib
     <div class="adm-form">
       <label>Service name</label><input [(ngModel)]="form.title" maxlength="60">
       <label>Short description</label><textarea rows="3" [(ngModel)]="form.description" maxlength="200"></textarea>
+      <label>Time this service takes (minutes)</label>
+      <input type="number" min="5" max="600" step="5" [(ngModel)]="form.duration">
+      <span class="adm-note">{{ fmt(form.duration) || 'Enter minutes, e.g. 90' }}. Customers can only book a time when the whole service fits before the next booking, so no two appointments overlap.</span>
       <label>Icon (an emoji, shown when the service has no picture)</label><input [(ngModel)]="form.icon" maxlength="12">
 
       <label>Picture</label>
@@ -43,14 +47,14 @@ const blank = (): SalonService => ({ title: '', description: '', icon: '', visib
   <div class="adm-card adm-scroll">
     @if (items().length) {
       <table class="adm-table">
-        <tr><th>Picture</th><th>Name</th><th>Description</th><th>On website</th><th></th></tr>
+        <tr><th>Picture</th><th>Name</th><th>Time</th><th>Description</th><th>On website</th><th></th></tr>
         @for (s of items(); track s._id) {
           <tr>
             <td>
               @if (s.imageUrl) { <img class="thumb" [src]="s.imageUrl" [alt]="s.title"> }
               @else { <div class="thumb empty">{{ s.icon || '-' }}</div> }
             </td>
-            <td>{{ s.title }}</td><td>{{ s.description }}</td>
+            <td>{{ s.title }}</td><td>{{ fmt(s.duration) || '-' }}</td><td>{{ s.description }}</td>
             <td><span [class]="'badge ' + (s.visible === false ? 'cancelled' : 'confirmed')">{{ s.visible === false ? 'Hidden' : 'Visible' }}</span></td>
             <td class="adm-row">
               <button class="adm-btn ghost sm" (click)="toggle(s)">{{ s.visible === false ? 'Show' : 'Hide' }}</button>
@@ -76,6 +80,7 @@ export class ServicesPage {
   newImage = '';          // abhi chuni hui nayi picture (chhoti ki hui)
   removeImage = false;    // true = save par purani picture hat jayegi
   size = IMAGE_SIZES.service;
+  fmt = formatDuration;
   sizeInfo = signal(''); sizeWarn = signal(false);
   msg = signal(''); isErr = signal(false); saving = signal(false);
 
@@ -104,7 +109,9 @@ export class ServicesPage {
   save() {
     const f = this.form;
     if (!f.title.trim() || !f.description.trim()) { this.show('Enter the service name and a short description.', true); return; }
-    const payload: ServicePayload = { _id: f._id, title: f.title, description: f.description, icon: f.icon, visible: f.visible !== false };
+    const duration = Number(f.duration);
+    if (!Number.isInteger(duration) || duration < 5 || duration > 600) { this.show('Enter the time in whole minutes (between 5 and 600).', true); return; }
+    const payload: ServicePayload = { _id: f._id, title: f.title, description: f.description, icon: f.icon, duration, visible: f.visible !== false };
     if (this.newImage) payload.image = this.newImage;
     else if (this.removeImage && f.imageUrl) payload.removeImage = true;
 
@@ -118,7 +125,7 @@ export class ServicesPage {
 
   // Hide / Show: sirf visible badalta hai, picture waisi hi rehti hai
   toggle(s: SalonService) {
-    const payload: ServicePayload = { _id: s._id, title: s.title, description: s.description, icon: s.icon, visible: s.visible === false };
+    const payload: ServicePayload = { _id: s._id, title: s.title, description: s.description, icon: s.icon, duration: s.duration, visible: s.visible === false };
     this.api.saveService(payload).subscribe({
       next: () => { this.load(); this.show(payload.visible ? `"${s.title}" is now visible on the website.` : `"${s.title}" is now hidden from the website.`); },
       error: e => this.show(e.error?.error || 'Could not update the service.', true)

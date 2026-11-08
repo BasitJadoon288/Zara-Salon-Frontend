@@ -1,9 +1,14 @@
-export interface SalonService { _id?: string; title: string; description: string; icon: string; visible?: boolean; imageUrl?: string | null; }
+export interface SalonService { _id?: string; title: string; description: string; icon: string; duration?: number; visible?: boolean; imageUrl?: string | null; }
 // Service save karte waqt: image = nayi picture, removeImage = picture hatao, kuch nahi = picture waisi hi
-export interface ServicePayload { _id?: string; title: string; description: string; icon: string; visible?: boolean; image?: string; removeImage?: boolean; }
+export interface ServicePayload { _id?: string; title: string; description: string; icon: string; duration?: number; visible?: boolean; image?: string; removeImage?: boolean; }
 export type AppointmentStatus = "pending" | "confirmed" | "cancelled";
 export interface AppointmentPayload { name: string; phone: string; email: string; branch: string; service: string; date: string; time: string; }
-export interface Appointment extends AppointmentPayload { _id: string; status: AppointmentStatus; createdAt: string; statusChangedBy?: string; statusChangedAt?: string; }
+export interface Appointment extends AppointmentPayload { _id: string; duration?: number; status: AppointmentStatus; createdAt: string; statusChangedBy?: string; statusChangedAt?: string; }
+// Booking ke waqt ek din ke time slots (server batata hai kaun sa khali hai aur kaun sa booked)
+export interface TimeSlot { time: string; available: boolean; reason?: 'booked' | 'past'; }
+export interface Availability { date: string; branch: string; service: string; duration: number; open: string; close: string; slots: TimeSlot[]; }
+// Salon ke timing ki settings (sirf admin badal sakta hai)
+export interface TimingSettings { openTime: string; closeTime: string; slotStep: number; chairs: number; slotSteps?: number[]; maxChairs?: number; }
 export interface ContactPayload { name: string; email: string; phone: string; message: string; }
 export interface ContactMessage extends ContactPayload { _id: string; createdAt: string; }
 export interface NewsletterPayload { email: string; gender: "Female" | "Male"; }
