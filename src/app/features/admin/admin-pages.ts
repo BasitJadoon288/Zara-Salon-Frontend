@@ -9,3 +9,4 @@ export { RateListPage } from './pages/rate-list.page';
 export { MessagesPage } from './pages/messages.page';
 export { StaffPage } from './pages/staff.page';
 export { TimingPage } from './pages/timing.page';
+export { TeamPage } from './pages/team.page';

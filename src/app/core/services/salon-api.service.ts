@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, catchError, defer, map, of, tap } from "rxjs";
 import {
-  AboutInfo, AboutPayload, Appointment, Availability, AppointmentPayload, AppointmentStatus, ContactMessage, ContactPayload,
+  AboutInfo, AboutPayload, Appointment, Availability, AppointmentPayload, BookingResult, BookingRules, ManageAppointment, Stylist, StylistLite, AppointmentStatus, ContactMessage, ContactPayload,
   LoginResponse, NewsletterPayload, TimingSettings, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
 } from "../models/models";
 import { FALLBACK_SERVICES } from "../config/salon.config";
@@ -25,11 +25,23 @@ export class SalonApiService {
   getAbout() {
     return this.http.get<AboutInfo | null>(`${this.base}/about`).pipe(tap({ error: e => console.warn("Could not load about", e) }));
   }
-  // Is branch / service / date ke time slots: kaun sa khali hai, kaun sa booked
-  getAvailability(branch: string, service: string, date: string) {
-    return this.http.get<Availability>(`${this.base}/appointments/availability`, { params: { branch, service, date } });
+  // Is branch / service / date ke time slots. stylist = khaas stylist, exclude = booking code (reschedule mein apni purani booking khali ginne ke liye)
+  getAvailability(branch: string, service: string, date: string, stylist = '', exclude = '') {
+    const params: Record<string, string> = { branch, service, date };
+    if (stylist) params['stylist'] = stylist;
+    if (exclude) params['exclude'] = exclude;
+    return this.http.get<Availability>(`${this.base}/appointments/availability`, { params });
   }
-  bookAppointment(data: AppointmentPayload) { return this.http.post(`${this.base}/appointments`, data); }
+  getRules() { return this.http.get<BookingRules>(`${this.base}/appointments/rules`); }
+  requestOtp(email: string) { return this.http.post<{ ok: boolean; resendIn: number }>(`${this.base}/appointments/otp`, { email }); }
+  getStylists(branch: string, service: string) { return this.http.get<StylistLite[]>(`${this.base}/stylists`, { params: { branch, service } }); }
+  bookAppointment(data: AppointmentPayload) { return this.http.post<BookingResult>(`${this.base}/appointments`, data); }
+
+  // ---------- Customer: booking code se dekhna / badalna / cancel ----------
+  getManage(code: string) { return this.http.get<ManageAppointment>(`${this.base}/appointments/manage/${encodeURIComponent(code)}`); }
+  manageReschedule(code: string, date: string, time: string) { return this.http.post<ManageAppointment>(`${this.base}/appointments/manage/${encodeURIComponent(code)}/reschedule`, { date, time }); }
+  manageCancel(code: string) { return this.http.post<ManageAppointment>(`${this.base}/appointments/manage/${encodeURIComponent(code)}/cancel`, {}); }
+
   sendContact(data: ContactPayload) { return this.http.post(`${this.base}/contacts`, data); }
   subscribe(data: NewsletterPayload) { return this.http.post(`${this.base}/subscribe`, data); }
   getPromo() { return this.http.get<{ image: string } | null>(`${this.base}/promo`); }
@@ -43,6 +55,8 @@ export class SalonApiService {
 
   // ---------- Appointments & messages ----------
   getAppointments() { return this.http.get<Appointment[]>(`${this.base}/appointments`); }
+  createAppointmentAdmin(data: AppointmentPayload) { return this.http.post<Appointment>(`${this.base}/appointments/admin`, data); }
+  rescheduleAppointment(id: string, body: { date: string; time: string; stylistId: string }) { return this.http.patch<Appointment>(`${this.base}/appointments/${id}/reschedule`, body); }
   updateStatus(id: string, status: AppointmentStatus) { return this.http.patch(`${this.base}/appointments/${id}`, { status }); }
   getContacts() { return this.http.get<ContactMessage[]>(`${this.base}/contacts`); }
 
@@ -63,8 +77,14 @@ export class SalonApiService {
   // ---------- Salon timing (admin) ----------
   getTiming() { return this.http.get<TimingSettings>(`${this.base}/admin/timing`); }
   saveTiming(t: TimingSettings) {
-    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime: t.openTime, closeTime: t.closeTime, slotStep: t.slotStep, chairs: t.chairs });
+    const { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, customerChanges, changeCutoffHours } = t;
+    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, customerChanges, changeCutoffHours });
   }
+
+  // ---------- Team (stylists) - admin ----------
+  getStylistsAdmin() { return this.http.get<Stylist[]>(`${this.base}/admin/stylists`); }
+  saveStylist(s: Stylist) { return s._id ? this.http.put<Stylist>(`${this.base}/admin/stylists/${s._id}`, s) : this.http.post<Stylist>(`${this.base}/admin/stylists`, s); }
+  deleteStylist(id: string) { return this.http.delete(`${this.base}/admin/stylists/${id}`); }
 
   // ---------- Home slider (admin) ----------
   getSlidesAdmin() { return this.http.get<Slide[]>(`${this.base}/admin/slides`); } // chhupi hui bhi

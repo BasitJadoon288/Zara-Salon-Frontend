@@ -8,6 +8,8 @@ export const routes: Routes = [
   { path: "", loadComponent: () => import("./features/home/home.component").then(m => m.HomeComponent) },
   { path: "about", loadComponent: () => import("./features/about/about.component").then(m => m.AboutComponent) },
   { path: "services", loadComponent: () => import("./features/services/services.component").then(m => m.ServicesComponent) },
+  { path: "manage", loadComponent: () => import("./features/manage/manage.component").then(m => m.ManageComponent) },
+  { path: "manage/:code", loadComponent: () => import("./features/manage/manage.component").then(m => m.ManageComponent) },
   { path: "contact", loadComponent: () => import("./features/contact/contact.component").then(m => m.ContactComponent) },
 
   // ----- Admin portal -----
@@ -22,6 +24,7 @@ export const routes: Routes = [
       { path: "reviews", canActivate: adminOnly, loadComponent: () => admin().then(m => m.ReviewsPage) },
       { path: "services", canActivate: adminOnly, loadComponent: () => admin().then(m => m.ServicesPage) },
       { path: "timing", canActivate: adminOnly, loadComponent: () => admin().then(m => m.TimingPage) },
+      { path: "team", canActivate: adminOnly, loadComponent: () => admin().then(m => m.TeamPage) },
       { path: "slider", canActivate: adminOnly, loadComponent: () => admin().then(m => m.SliderPage) },
       { path: "about", canActivate: adminOnly, loadComponent: () => admin().then(m => m.AboutPage) },
       { path: "rate-list", canActivate: adminOnly, loadComponent: () => admin().then(m => m.RateListPage) },

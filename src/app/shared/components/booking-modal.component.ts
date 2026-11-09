@@ -1,130 +1,137 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, effect, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { RouterLink } from '@angular/router';
 import { BookingModalService } from '../../core/services/booking-modal.service';
 import { SalonApiService } from '../../core/services/salon-api.service';
-import { AppointmentPayload, Availability } from '../../core/models/models';
+import { AppointmentPayload, BookingResult, BookingRules, StylistLite } from '../../core/models/models';
 import { BRANCHES } from '../../core/config/salon.config';
-import { endTime, formatDuration, to12h } from '../../core/utils/duration.util';
+import { SlotPickerComponent } from './slot-picker.component';
 
-const empty = (): AppointmentPayload => ({ name: '', phone: '', email: '', branch: '', service: '', date: '', time: '' });
+const empty = (): AppointmentPayload => ({ name: '', phone: '', email: '', branch: '', service: '', date: '', time: '', stylistId: '', otp: '' });
 const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }); // yyyy-mm-dd
 
 @Component({
-  selector: 'app-booking-modal', standalone: true, imports: [FormsModule, AsyncPipe],
+  selector: 'app-booking-modal', standalone: true, imports: [FormsModule, AsyncPipe, RouterLink, SlotPickerComponent],
   template: `@if (modal.isOpen()) {
-  <div class="overlay" (click)="modal.close()"><div class="box" (click)="$event.stopPropagation()">
+  <div class="overlay" (click)="close()"><div class="box" (click)="$event.stopPropagation()">
+    @if (done) {
+      <h2>Request sent</h2>
+      <div class="msg">Your appointment request was sent{{ done.stylistName ? ' with ' + done.stylistName : '' }}.</div>
+      <p class="lead">Your booking code</p>
+      <div class="code">{{ done.code }}</div>
+      <button class="btn small" type="button" (click)="copy(done.code)">{{ copied ? 'Copied!' : 'Copy code' }}</button>
+      <p class="fine">Please save this code. You can change or cancel your appointment with it{{ form.email ? ' (we also emailed it to you)' : '' }}.</p>
+      @if (done.status === 'pending') {
+        <p class="fine">The salon will confirm your request soon.{{ done.holdHours ? ' If it is not confirmed within ' + done.holdHours + ' hours, this time may be given to someone else.' : '' }}</p>
+      }
+      <a class="manage" [routerLink]="['/manage', done.code]" (click)="close()">Change or cancel this appointment</a>
+      <button class="btn" type="button" (click)="again()">Book another</button>
+      <button class="btn grey" type="button" (click)="close()">Close</button>
+    } @else {
     <h2>Get your appointment</h2>
     @if (message) { <div class="msg" [class.err]="isError">{{ message }}</div> }
     <input placeholder="Full name *" [(ngModel)]="form.name">
     <input placeholder="Phone *" [(ngModel)]="form.phone">
-    <input placeholder="Email" [(ngModel)]="form.email">
-    <select [ngModel]="form.branch" (ngModelChange)="form.branch = $event; loadSlots()"><option value="">Select Branch *</option>@for (b of branches; track b) { <option>{{ b }}</option> }</select>
-    <select [ngModel]="form.service" (ngModelChange)="form.service = $event; loadSlots()"><option value="">Select Service *</option>
+    <input [placeholder]="rules?.requireEmailOtp ? 'Email *' : 'Email'" [(ngModel)]="form.email">
+    <select [ngModel]="form.branch" (ngModelChange)="form.branch = $event; changed()"><option value="">Select Branch *</option>@for (b of branches; track b) { <option>{{ b }}</option> }</select>
+    <select [ngModel]="form.service" (ngModelChange)="form.service = $event; changed()"><option value="">Select Service *</option>
       @for (s of (api.services$ | async) ?? []; track s.title) { <option [value]="s.title">{{ s.title }}</option> }</select>
-    <input type="date" [min]="today" [ngModel]="form.date" (ngModelChange)="form.date = $event; loadSlots()">
+    @if (stylists.length) {
+      <select [(ngModel)]="form.stylistId" (ngModelChange)="form.time = ''"><option value="">Any available stylist</option>
+        @for (s of stylists; track s._id) { <option [value]="s._id">{{ s.name }}</option> }</select>
+    }
+    <input type="date" [min]="today" [ngModel]="form.date" (ngModelChange)="form.date = $event; form.time = ''">
 
-    @if (form.branch && form.service && form.date) {
-      <div class="slots-wrap">
-        <div class="slots-head">
-          <b>Choose a time *</b>
-          @if (avail) { <span class="note">This service takes about {{ fmt(avail.duration) }}</span> }
-        </div>
-        @if (loading) { <div class="note">Checking available times...</div> }
-        @else if (slotsError) { <div class="note bad">{{ slotsError }}</div> }
-        @else if (avail && !avail.slots.length) { <div class="note bad">No times are available on this day. Please choose another date.</div> }
-        @else if (avail) {
-          <div class="slots">
-            @for (s of avail.slots; track s.time) {
-              <button type="button" class="slot" [class.sel]="form.time === s.time" [class.covered]="isCovered(s.time)" [class.taken]="!s.available" [disabled]="!s.available"
-                [title]="s.available ? 'Select ' + to12(s.time) : (s.reason === 'past' ? 'This time has passed' : 'Already booked')"
-                (click)="form.time = s.time">
-                {{ to12(s.time) }}
-                @if (!s.available) { <small>{{ s.reason === 'past' ? 'Passed' : 'Booked' }}</small> }
-                @else if (form.time === s.time) { <small>Start</small> }
-                @else if (isCovered(s.time)) { <small>Reserved</small> }
-              </button>
-            }
-          </div>
-          @if (form.time) { <div class="note ok">Your slot: {{ to12(form.time) }} to {{ to12(end(form.time)) }} ({{ fmt(avail.duration) }}). All times in between are reserved for you.</div> }
-          @else if (!hasFree()) { <div class="note bad">All times are booked on this day. Please choose another date.</div> }
-        }
+    <app-slot-picker [branch]="form.branch" [service]="form.service" [date]="form.date" [stylist]="form.stylistId || ''"
+      [time]="form.time" (timeChange)="form.time = $event" />
+
+    @if (rules?.requireEmailOtp) {
+      <div class="otp">
+        <div class="note">To keep bookings genuine, we send a 6 digit code to your email.</div>
+        <button class="btn small" type="button" (click)="sendCode()" [disabled]="otpBusy || cooldown > 0">
+          {{ otpBusy ? 'Sending...' : cooldown > 0 ? 'Resend in ' + cooldown + 's' : (otpSent ? 'Resend code' : 'Send code to my email') }}</button>
+        @if (otpSent) { <div class="note ok">Code sent. Check your inbox (and spam folder).</div> }
+        <input placeholder="6 digit code *" inputmode="numeric" maxlength="6" [(ngModel)]="form.otp">
       </div>
-    } @else { <div class="note hint">Select branch, service and date to see available times.</div> }
+    }
 
     <button class="btn" (click)="submit()" [disabled]="sending">{{ sending ? 'Sending...' : 'Submit' }}</button>
-    <button class="btn grey" (click)="modal.close()">Close</button>
+    <button class="btn grey" (click)="close()">Close</button>
+    <a class="manage" routerLink="/manage" (click)="close()">Already booked? Change or cancel</a>
+    }
   </div></div> }`,
   styles: [`
   .overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
   .box{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--card-ring);padding:30px;border-radius:14px;width:100%;max-width:480px;max-height:92vh;overflow:auto}
   h2{margin-bottom:16px}.grey{background:#999;margin-left:8px}
   .btn[disabled]{opacity:.6;cursor:default}
-  .slots-wrap{margin:0 0 16px}
-  .slots-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:14px}
-  .note{font-size:13px;color:var(--muted);margin-bottom:8px}
-  .note.hint{margin-bottom:14px}
-  .note.ok{color:var(--msg-ok-ink);margin:10px 0 0}
-  .note.bad{color:var(--msg-bad-ink)}
-  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
-  .slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:42px;padding:6px 4px;border-radius:8px;
-    border:1px solid var(--field-line);background:var(--field-bg);color:var(--text);font:500 13px 'Poppins',sans-serif;cursor:pointer}
-  .slot:hover:not(:disabled){border-color:var(--rose-ink);color:var(--rose-ink)}
-  .slot.sel{background:var(--rose);border-color:var(--rose);color:#fff}
-  .slot.covered:not(.sel){background:var(--soft);border-color:var(--rose);color:var(--rose-ink)}
-  .slot.taken{background:var(--msg-bad-bg);border-color:transparent;color:var(--msg-bad-ink);cursor:not-allowed;opacity:.75}
-  .slot.taken{text-decoration:line-through}
-  .slot small{font-size:10px;text-decoration:none;display:block;letter-spacing:.3px}
-  .slot:focus-visible{outline:2px solid var(--rose-ink);outline-offset:1px}`]
+  .btn.small{padding:8px 16px;font-size:13px;margin-bottom:12px}
+  .note{font-size:13px;color:var(--muted);margin-bottom:8px}.note.ok{color:var(--msg-ok-ink)}
+  .otp{margin:0 0 16px}.otp input{margin-top:8px}
+  .lead{margin:14px 0 6px;color:var(--muted);font-size:13px}
+  .code{font:700 26px 'Poppins',sans-serif;letter-spacing:4px;margin-bottom:10px;color:var(--rose-ink);word-break:break-all}
+  .fine{font-size:13px;color:var(--muted);margin:0 0 10px}
+  .manage{display:block;margin:12px 0;font-size:13px;color:var(--rose-ink);text-decoration:underline}`]
 })
-export class BookingModalComponent {
+export class BookingModalComponent implements OnDestroy {
   modal = inject(BookingModalService); api = inject(SalonApiService);
   branches = BRANCHES; form = empty(); message = ''; isError = false; sending = false;
   today = todayStr();
-  avail: Availability | null = null; loading = false; slotsError = '';
-  private slotsSub?: Subscription;
-  fmt = formatDuration; to12 = to12h;
+  rules: BookingRules | null = null; stylists: StylistLite[] = [];
+  done: BookingResult | null = null; copied = false;
+  otpSent = false; otpBusy = false; cooldown = 0; private timer?: ReturnType<typeof setInterval>;
 
-  end(time: string) { return endTime(time, this.avail?.duration); }
-  // Chune hue slot ke baad service ke poore time mein jo slots aate hain (wo sab is customer ke liye reserve hongay)
-  isCovered(time: string) {
-    if (!this.form.time || !this.avail) return false;
-    const m = (t: string) => { const [h, mi] = t.split(':').map(Number); return h * 60 + mi; };
-    return m(time) >= m(this.form.time) && m(time) < m(this.form.time) + this.avail.duration;
+  constructor() {
+    // Form khulte hi rules mangwayen (email code chahiye ya nahi)
+    effect(() => { if (this.modal.isOpen()) this.api.getRules().subscribe({ next: r => this.rules = r, error: () => this.rules = null }); });
   }
-  hasFree() { return !!this.avail?.slots.some(s => s.available); }
+  ngOnDestroy() { clearInterval(this.timer); }
 
-  // Branch, service ya date badalne par us din ke slots dobara mangwata hai
-  loadSlots() {
-    this.slotsSub?.unsubscribe();
-    this.form.time = ''; this.avail = null; this.slotsError = '';
-    const { branch, service, date } = this.form;
-    if (!branch || !service || !date) return;
-    if (date < this.today) { this.slotsError = 'Please choose today or a future date.'; return; }
-    this.loading = true;
-    this.slotsSub = this.api.getAvailability(branch, service, date).subscribe({
-      next: a => { this.avail = a; this.loading = false; },
-      error: e => { this.slotsError = e.error?.error || 'Could not load available times. Please try again.'; this.loading = false; }
+  close() { this.modal.close(); this.done = null; this.message = ''; }
+  again() { const { branch, service, date } = this.form; this.form = { ...empty(), branch, service, date }; this.done = null; this.message = ''; this.otpSent = false; this.changed(true); }
+
+  // Branch ya service badalne par us ke stylists mangwayen
+  changed(keep = false) {
+    this.form.time = ''; if (!keep) this.form.stylistId = '';
+    this.stylists = [];
+    const { branch, service } = this.form;
+    if (branch && service) this.api.getStylists(branch, service).subscribe({ next: l => { if (this.form.branch === branch && this.form.service === service) this.stylists = l; }, error: () => this.stylists = [] });
+  }
+
+  copy(code: string) {
+    navigator.clipboard?.writeText(code).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); }).catch(() => {});
+  }
+
+  sendCode() {
+    const email = this.form.email.trim();
+    if (!email) return this.show('Please enter your email first.', true);
+    this.otpBusy = true;
+    this.api.requestOtp(email).subscribe({
+      next: r => { this.otpBusy = false; this.otpSent = true; this.message = ''; this.startCooldown(r.resendIn || 60); },
+      error: e => { this.otpBusy = false; this.show(e.error?.error || 'Could not send the code. Try again.', true); }
     });
+  }
+  private startCooldown(sec: number) {
+    clearInterval(this.timer); this.cooldown = sec;
+    this.timer = setInterval(() => { this.cooldown--; if (this.cooldown <= 0) clearInterval(this.timer); }, 1000);
   }
 
   submit() {
     const f = this.form;
     if (!f.name || !f.phone || !f.date || !f.branch || !f.service) { return this.show('Please fill all required fields.', true); }
     if (!f.time) { return this.show('Please choose an available time.', true); }
-    this.sending = true;
-    this.api.bookAppointment(f).subscribe({
-      next: () => {
-        const { branch, service, date } = this.form;
-        this.sending = false; this.form = { ...empty(), branch, service, date };
-        this.show('Appointment request sent! We will contact you soon.', false);
-        this.loadSlots(); // ab wo waqt "Booked" dikhega
-      },
+    if (this.rules?.requireEmailOtp) {
+      if (!f.email) return this.show('Email is required.', true);
+      if (!/^\d{6}$/.test(f.otp || '')) return this.show('Enter the 6 digit code sent to your email.', true);
+    }
+    this.sending = true; this.message = '';
+    this.api.bookAppointment({ ...f, stylistId: f.stylistId || undefined, otp: f.otp || undefined }).subscribe({
+      next: r => { this.sending = false; this.done = r; this.otpSent = false; },
       error: e => {
         this.sending = false;
         this.show(e.error?.error || 'Something went wrong. Try again.', true);
-        if (e.status === 409) this.loadSlots(); // kisi aur ne ye waqt le liya: taza slots dikhayen
+        if (e.status === 409) { const t = this.form.date; this.form.date = ''; setTimeout(() => this.form.date = t); } // kisi aur ne ye waqt le liya: taza slots dikhayen
       }
     });
   }
