@@ -10,3 +10,6 @@ export { MessagesPage } from './pages/messages.page';
 export { StaffPage } from './pages/staff.page';
 export { TimingPage } from './pages/timing.page';
 export { TeamPage } from './pages/team.page';
+export { GalleryAdminPage } from './pages/gallery.page';
+export { CareersAdminPage } from './pages/careers.page';
+export { ApplicationsAdminPage } from './pages/applications.page';

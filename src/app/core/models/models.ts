@@ -56,3 +56,24 @@ export interface StaffUser { _id: string; name: string; email: string; role: Rol
 export interface Slide { _id?: string; title: string; text: string; visible?: boolean; order?: number; imageUrl?: string | null; }
 // Slide save karte waqt: image = nayi picture (naye slide ke liye zaroori), na bhejein = picture waisi hi
 export interface SlidePayload { _id?: string; title: string; text: string; visible?: boolean; image?: string; }
+
+// ---------- Gallery ----------
+export interface GalleryItem { _id: string; caption: string; visible: boolean; imageUrl: string; thumbUrl: string; }
+export interface GalleryPage { items: GalleryItem[]; page: number; pages: number; total: number; perPage: number; max: number; }
+
+// ---------- Careers ----------
+export type JobType = 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+export interface Job {
+  _id?: string; title: string; department: string; branch: string; type: JobType; description: string; requirements: string;
+  salaryText: string; openings: number; closingDate: string; active: boolean; applications?: number;
+}
+export interface ApplyPayload {
+  jobId?: string; name: string; phone: string; email: string; city: string; experience: string; expectedSalary: string; message: string;
+  cv?: { name: string; data: string }; website?: string;
+}
+export type ApplicationStatus = 'new' | 'shortlisted' | 'interview' | 'rejected' | 'hired';
+export interface Application {
+  _id: string; job: string; jobTitle: string; name: string; phone: string; email: string; city: string; experience: string; expectedSalary: string;
+  message: string; hasCv: boolean; cvName: string; cvSize: number; status: ApplicationStatus; notes: string; statusChangedBy: string; createdAt: string;
+}
+export interface ApplicationsPage { items: Application[]; page: number; pages: number; total: number; perPage: number; newCount: number; }

@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, catchError, defer, map, of, tap } from "rxjs";
 import {
-  AboutInfo, AboutPayload, Appointment, Availability, AppointmentPayload, BookingResult, BookingRules, ManageAppointment, Stylist, StylistLite, AppointmentStatus, ContactMessage, ContactPayload,
+  AboutInfo, AboutPayload, Application, ApplicationsPage, ApplicationStatus, ApplyPayload, GalleryItem, GalleryPage, Job, Appointment, Availability, AppointmentPayload, BookingResult, BookingRules, ManageAppointment, Stylist, StylistLite, AppointmentStatus, ContactMessage, ContactPayload,
   LoginResponse, NewsletterPayload, TimingSettings, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
 } from "../models/models";
 import { FALLBACK_SERVICES } from "../config/salon.config";
@@ -106,4 +106,27 @@ export class SalonApiService {
   getUsers() { return this.http.get<StaffUser[]>(`${this.base}/admin/users`); }
   addUser(u: { name: string; email: string; password: string; role: "staff" }) { return this.http.post<StaffUser>(`${this.base}/admin/users`, u); }
   deleteUser(id: string) { return this.http.delete(`${this.base}/admin/users/${id}`); }
+
+  // ---------- Gallery ----------
+  getGallery(page = 1) { return this.http.get<GalleryPage>(`${this.base}/gallery`, { params: { page } }); }
+  getGalleryAdmin(page = 1) { return this.http.get<GalleryPage>(`${this.base}/admin/gallery`, { params: { page } }); }
+  uploadPhoto(p: { caption: string; image: string; thumb: string }) { return this.http.post<GalleryItem>(`${this.base}/gallery`, p); }
+  updatePhoto(id: string, body: { caption?: string; visible?: boolean }) { return this.http.put<GalleryItem>(`${this.base}/gallery/${id}`, body); }
+  deletePhoto(id: string) { return this.http.delete(`${this.base}/gallery/${id}`); }
+  bulkPhotos(action: 'delete' | 'hide' | 'show', ids: string[]) { return this.http.post(`${this.base}/gallery/bulk`, { action, ids }); }
+
+  // ---------- Careers ----------
+  getJobs() { return this.http.get<Job[]>(`${this.base}/careers/jobs`); }
+  applyForJob(p: ApplyPayload) { return this.http.post<{ ok: boolean }>(`${this.base}/careers/apply`, p); }
+  getJobsAdmin() { return this.http.get<Job[]>(`${this.base}/admin/careers/jobs`); }
+  saveJob(j: Job) { return j._id ? this.http.put<Job>(`${this.base}/admin/careers/jobs/${j._id}`, j) : this.http.post<Job>(`${this.base}/admin/careers/jobs`, j); }
+  deleteJob(id: string) { return this.http.delete(`${this.base}/admin/careers/jobs/${id}`); }
+  getApplications(q: { job?: string; status?: string; q?: string; page?: number }) {
+    const params: Record<string, string> = {};
+    if (q.job) params['job'] = q.job; if (q.status) params['status'] = q.status; if (q.q) params['q'] = q.q; if (q.page) params['page'] = String(q.page);
+    return this.http.get<ApplicationsPage>(`${this.base}/admin/careers/applications`, { params });
+  }
+  updateApplication(id: string, body: { status?: ApplicationStatus; notes?: string }) { return this.http.patch<Application>(`${this.base}/admin/careers/applications/${id}`, body); }
+  deleteApplication(id: string) { return this.http.delete(`${this.base}/admin/careers/applications/${id}`); }
+  downloadCv(id: string) { return this.http.get(`${this.base}/admin/careers/applications/${id}/cv`, { responseType: 'blob' }); }
 }

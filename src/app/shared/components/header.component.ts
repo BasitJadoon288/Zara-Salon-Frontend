@@ -37,6 +37,8 @@ import { ThemeToggleComponent } from './theme-toggle.component';
           <a routerLink="/" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Home</a>
           <a routerLink="/about" routerLinkActive="on" (click)="closeMenu()">About Us</a>
           <a routerLink="/services" routerLinkActive="on" (click)="closeMenu()">Services</a>
+          <a routerLink="/gallery" routerLinkActive="on" (click)="closeMenu()">Gallery</a>
+          <a routerLink="/careers" routerLinkActive="on" (click)="closeMenu()">Careers</a>
           <a routerLink="/contact" routerLinkActive="on" (click)="closeMenu()">Contact</a>
           <button class="btn" type="button" (click)="bookAppointment()">Appointment</button>
         </nav>
@@ -90,6 +92,14 @@ import { ThemeToggleComponent } from './theme-toggle.component';
     nav a.on, nav a:hover { color: var(--rose-ink); }
     .right { display: flex; align-items: center; gap: 22px; }
 
+    /* Chhoti laptop screen par links thode kam jagah lein, taake sab ek line mein aayein */
+    @media (min-width: 901px) and (max-width: 1180px) {
+      nav { gap: 14px; }
+      nav a { font-size: 13px; letter-spacing: .5px; }
+      .right { gap: 12px; }
+      .stylish-brand { font-size: 32px !important; }
+    }
+
     /* Hamburger button - hidden on desktop */
     .menu-toggle {
       display: none;
@@ -117,7 +127,7 @@ import { ThemeToggleComponent } from './theme-toggle.component';
     .menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
     /* Tablet & Mobile */
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .bar { min-height: 64px; }
       .logo img { height: 44px; }
       .stylish-brand { font-size: 30px !important; }
