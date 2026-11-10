@@ -162,6 +162,22 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
       </div>
     </div>
 
+    <!-- 6. Yaad-dahani email -->
+    <div class="adm-card">
+      <h3>Reminder emails</h3>
+      <p class="adm-note sp">Customers get a friendly reminder email one day before their appointment, with a link to change or cancel it.</p>
+      <div class="adm-form">
+        <label class="adm-chk"><input type="checkbox" [(ngModel)]="c.reminderEmail">Send a reminder email 1 day before the appointment</label>
+        <span class="adm-note">Sent every morning at about 10:00 AM for <b>tomorrow's</b> appointments. Only <b>confirmed</b> appointments whose customer gave an email get a reminder, and each appointment gets it only once. If you move an appointment to a new day, the reminder is sent again for the new day.</span>
+        @if (!emailReady()) { <span class="adm-note" style="color:var(--msg-bad-ink)">Email is not set up on the server yet, so no reminders can be sent (add EMAIL_USER and EMAIL_PASS in the backend settings).</span> }
+        <div class="adm-row">
+          <button class="adm-btn ghost" type="button" (click)="sendReminders()" [disabled]="reminding() || !emailReady()">{{ reminding() ? 'Sending...' : "Send tomorrow's reminders now" }}</button>
+        </div>
+        <span class="adm-note">Save your changes first. This button sends the reminders right now (for example to test it). Anyone who already got a reminder is skipped.</span>
+        @if (reminderMsg()) { <div class="msg" [class.err]="reminderErr()">{{ reminderMsg() }}</div> }
+      </div>
+    </div>
+
     <div class="adm-row"><button class="adm-btn" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save timing' }}</button></div>
   } @else { <div class="adm-empty">Loading...</div> }`,
   styles: [`
@@ -180,6 +196,7 @@ export class TimingPage {
   steps = signal<number[]>([10, 15, 20, 30, 45, 60]); maxChairs = signal(20); branchNames = signal<string[]>([]); emailReady = signal(false);
   affected = signal<TimingSettings['affected'] | null>(null);
   saving = signal(false); msg = signal(''); isErr = signal(false);
+  reminding = signal(false); reminderMsg = signal(''); reminderErr = signal(false);
   nb: BreakRule = blankBreak(); nc: Closure = blankClosure();
 
   constructor() {
@@ -199,6 +216,23 @@ export class TimingPage {
     if (t.maxChairs) this.maxChairs.set(t.maxChairs);
     this.branchNames.set(t.branchNames || []);
     this.emailReady.set(!!t.emailReady);
+  }
+
+  // Kal ki appointments ki reminder emails abhi bhejna
+  sendReminders() {
+    if (!confirm("Send reminder emails now to customers who have a confirmed appointment tomorrow?")) return;
+    this.reminding.set(true); this.reminderMsg.set('');
+    this.api.runReminders().subscribe({
+      next: r => {
+        this.reminding.set(false); this.reminderErr.set(false);
+        this.reminderMsg.set(!r.enabled ? 'Reminder emails are switched off. Tick the box, press Save timing, and try again.'
+          : !r.mailReady ? 'Email is not set up on the server.'
+          : r.found === 0 ? `Nothing to send for tomorrow (${r.date}): there is no confirmed appointment with an email that has not been reminded yet.`
+          : `Tomorrow (${r.date}): ${r.sent} reminder${r.sent === 1 ? '' : 's'} sent` + (r.failed ? `, ${r.failed} could not be sent (they will be tried again)` : '') + (r.remaining ? `, ${r.remaining} more waiting (press the button again)` : '') + '.');
+        if (r.failed) this.reminderErr.set(true);
+      },
+      error: e => { this.reminding.set(false); this.reminderErr.set(true); this.reminderMsg.set(e.error?.error || 'Could not send the reminders.'); }
+    });
   }
 
   toggle<T>(arr: T[], v: T) { const i = arr.indexOf(v); i >= 0 ? arr.splice(i, 1) : arr.push(v); }

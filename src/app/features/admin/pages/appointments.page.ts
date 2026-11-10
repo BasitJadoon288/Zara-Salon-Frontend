@@ -64,6 +64,7 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
               <select [ngModel]="a.status" (ngModelChange)="setStatus(a, $event)">
                 <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option>
               </select>
+              @if (a.reminderSentAt) { <div class="adm-note" style="font-size:12px;margin-top:4px">Reminder email sent</div> }
               @if (a.holdExpired) { <div class="adm-note" style="font-size:12px;margin-top:4px;color:#d9a21b">Not confirmed in time: this slot was released</div> }
               @if (a.statusChangedBy) { <div class="adm-note" style="font-size:12px;margin-top:4px">changed by {{ a.statusChangedBy }}</div> }
               @if (a.status !== 'cancelled') { <button class="adm-btn sm ghost" style="margin-top:6px" (click)="toggleMove(a)">{{ moving() === a._id ? 'Close' : 'Reschedule' }}</button> }

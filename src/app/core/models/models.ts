@@ -8,7 +8,7 @@ export interface AppointmentPayload {
 }
 export interface Appointment extends Omit<AppointmentPayload, 'status'> {
   _id: string; duration?: number; status: AppointmentStatus; createdAt: string; statusChangedBy?: string; statusChangedAt?: string;
-  code?: string; stylistName?: string; stylistPicked?: boolean; createdBy?: string; holdExpired?: boolean;
+  code?: string; reminderSentAt?: string; stylistName?: string; stylistPicked?: boolean; createdBy?: string; holdExpired?: boolean;
 }
 // Booking ke baad server ye wapas karta hai
 export interface BookingResult { ok: boolean; code: string; status: AppointmentStatus; stylistName: string; duration: number; holdHours: number; }
@@ -17,7 +17,7 @@ export interface BookingResult { ok: boolean; code: string; status: AppointmentS
 export interface TimeSlot { time: string; available: boolean; reason?: 'booked' | 'past' | 'break' | 'unavailable'; label?: string; }
 export interface Availability {
   date: string; branch: string; service: string; duration: number; closed: boolean; closedReason: string;
-  open: string; close: string; stylistMode: boolean; slots: TimeSlot[];
+  open: string; close: string; stylistMode: boolean; notice: string; slots: TimeSlot[];
 }
 // Booking form ko kya dikhana hai
 export interface BookingRules { requireEmailOtp: boolean; holdHours: number; customerChanges: boolean; changeCutoffHours: number; }
@@ -32,7 +32,7 @@ export interface Closure { from: string; to: string; branch: string; reason: str
 export interface TimingSettings {
   openTime: string; closeTime: string; slotStep: number; chairs: number; closedDays: number[];
   branches: Record<string, BranchTiming>; breaks: BreakRule[]; closures: Closure[];
-  holdHours: number; maxActivePerPhone: number; requireEmailOtp: boolean; customerChanges: boolean; changeCutoffHours: number;
+  holdHours: number; maxActivePerPhone: number; requireEmailOtp: boolean; reminderEmail: boolean; customerChanges: boolean; changeCutoffHours: number;
   slotSteps?: number[]; maxChairs?: number; maxBreaks?: number; maxClosures?: number; branchNames?: string[]; emailReady?: boolean;
   affected?: { count: number; items: { name: string; date: string; time: string; branch: string; issue: string }[] };
 }
@@ -77,3 +77,6 @@ export interface Application {
   message: string; hasCv: boolean; cvName: string; cvSize: number; status: ApplicationStatus; notes: string; statusChangedBy: string; createdAt: string;
 }
 export interface ApplicationsPage { items: Application[]; page: number; pages: number; total: number; perPage: number; newCount: number; }
+
+// Reminder emails abhi bhejne ka nateeja
+export interface ReminderResult { enabled: boolean; mailReady: boolean; date: string; found: number; sent: number; failed: number; remaining: number; }

@@ -8,7 +8,7 @@ import { PaginationComponent } from '../../shared/components/pagination.componen
 // Gallery: bridal pictures, ek page par 20. Picture par click karne se bari ho jati hai.
 @Component({
   selector: 'app-gallery', standalone: true, imports: [SectionTitleComponent, PaginationComponent],
-  template: `<section class="container"><app-section-title eyebrow="Our work" title="Gallery" /><br>
+  template: `<section class="container"><app-section-title eyebrow="Our work" title="Bridal Gallery" /><br>
     @if (error) { <p class="state bad">{{ error }}</p> }
     @else if (!data) { <div class="grid"> @for (n of skeleton; track n) { <div class="cell sk"></div> } </div> }
     @else if (!data.items.length) { <p class="state">Our gallery is coming soon. Please visit again!</p> }

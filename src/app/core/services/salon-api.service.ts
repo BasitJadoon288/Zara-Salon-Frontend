@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, catchError, defer, map, of, tap } from "rxjs";
 import {
-  AboutInfo, AboutPayload, Application, ApplicationsPage, ApplicationStatus, ApplyPayload, GalleryItem, GalleryPage, Job, Appointment, Availability, AppointmentPayload, BookingResult, BookingRules, ManageAppointment, Stylist, StylistLite, AppointmentStatus, ContactMessage, ContactPayload,
+  AboutInfo, AboutPayload, ReminderResult, Application, ApplicationsPage, ApplicationStatus, ApplyPayload, GalleryItem, GalleryPage, Job, Appointment, Availability, AppointmentPayload, BookingResult, BookingRules, ManageAppointment, Stylist, StylistLite, AppointmentStatus, ContactMessage, ContactPayload,
   LoginResponse, NewsletterPayload, TimingSettings, Promo, Review, SalonService, ServicePayload, Slide, SlidePayload, StaffUser
 } from "../models/models";
 import { FALLBACK_SERVICES } from "../config/salon.config";
@@ -77,9 +77,10 @@ export class SalonApiService {
   // ---------- Salon timing (admin) ----------
   getTiming() { return this.http.get<TimingSettings>(`${this.base}/admin/timing`); }
   saveTiming(t: TimingSettings) {
-    const { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, customerChanges, changeCutoffHours } = t;
-    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, customerChanges, changeCutoffHours });
+    const { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours } = t;
+    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours });
   }
+  runReminders() { return this.http.post<ReminderResult>(`${this.base}/admin/timing/reminders/run`, {}); }
 
   // ---------- Team (stylists) - admin ----------
   getStylistsAdmin() { return this.http.get<Stylist[]>(`${this.base}/admin/stylists`); }

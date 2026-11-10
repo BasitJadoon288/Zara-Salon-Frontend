@@ -18,6 +18,7 @@ import { endTime, formatDuration, to12h } from '../../core/utils/duration.util';
       @if (loading) { <div class="note">Checking available times...</div> }
       @else if (error) { <div class="note bad">{{ error }}</div> }
       @else if (avail?.closed) { <div class="note bad">{{ avail!.closedReason }} Please choose another date.</div> }
+      @else if (avail?.notice) { <div class="note bad">{{ avail!.notice }}</div> }
       @else if (avail && !avail.slots.length) { <div class="note bad">No times are available on this day. Please choose another date.</div> }
       @else if (avail) {
         <div class="slots">

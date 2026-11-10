@@ -1,6 +1,7 @@
-import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, HostListener, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { SALON } from '../../core/config/salon.config';
 import { Role } from '../../core/models/models';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle.component';
@@ -36,9 +37,18 @@ const NAV: NavItem[] = [
         }
       </nav>
       <div class="adm-user">
-        <b>{{ auth.user()?.name }}</b><span>{{ auth.user()?.role }}</span>
-        <app-theme-toggle [label]="true" [onDark]="true" />
-        <button class="adm-btn" (click)="auth.logout()"><i class="fa-solid fa-right-from-bracket"></i>Log out</button>
+        <div class="adm-user-row">
+          <div class="adm-who"><b>{{ auth.user()?.name }}</b><span>{{ auth.user()?.role }}</span></div>
+          <button type="button" class="adm-gear" (click)="toggleMenu($event)" aria-label="Settings" aria-haspopup="menu" [attr.aria-expanded]="menu()" title="Settings"><i class="fa-solid fa-gear"></i></button>
+        </div>
+        @if (menu()) {
+          <div class="adm-pop" role="menu" (click)="$event.stopPropagation()">
+            <button type="button" role="menuitem" class="adm-pop-item" (click)="theme.toggle(); menu.set(false)">
+              <i [class]="theme.isDark() ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>{{ theme.isDark() ? 'Light mode' : 'Dark mode' }}</button>
+            <button type="button" role="menuitem" class="adm-pop-item out" (click)="menu.set(false); auth.logout()">
+              <i class="fa-solid fa-right-from-bracket"></i>Log out</button>
+          </div>
+        }
       </div>
     </aside>
     @if (open()) { <div class="adm-shade" (click)="open.set(false)"></div> }
@@ -53,7 +63,9 @@ const NAV: NavItem[] = [
   .adm-side{width:240px;flex:none;background:var(--dark);color:#e9d6de;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;box-shadow:1px 0 0 var(--card-ring)}
   .adm-brand{padding:22px 20px;font:700 20px 'Playfair Display',serif;color:#fff;line-height:1.2}
   .adm-brand small{display:block;font:400 12px Poppins,sans-serif;color:#c9a9b6;margin-top:4px}
-  .adm-side nav{flex:1;padding:8px 10px;overflow:auto}
+  /* Menu scroll hota rahega (mouse wheel / touch se) lekin scroll bar nazar nahi aayega */
+  .adm-side nav{flex:1;padding:8px 10px;overflow:auto;scrollbar-width:none;-ms-overflow-style:none}
+  .adm-side nav::-webkit-scrollbar{display:none;width:0;height:0}
   .adm-side nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:#e9d6de;margin-bottom:2px}
   .adm-side nav a i{width:18px;text-align:center;opacity:.85}
   .adm-side nav a:hover{background:#ffffff14}
@@ -61,8 +73,18 @@ const NAV: NavItem[] = [
   .adm-user{padding:16px;border-top:1px solid #ffffff1f}
   .adm-user b{display:block;color:#fff}
   .adm-user span{font-size:12px;color:#c9a9b6;text-transform:capitalize}
-  .adm-user app-theme-toggle{display:flex;width:100%;margin-top:12px}
-  .adm-user .adm-btn{width:100%;margin-top:12px;justify-content:center;background:#ffffff14}
+  /* Settings (gear) button: dabane par Light / Dark mode aur Log out ka chhota menu khulta hai */
+  .adm-user{position:relative}
+  .adm-user-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .adm-who{min-width:0}.adm-who b,.adm-who span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .adm-gear{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid #ffffff40;background:#ffffff14;color:#fff;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .2s,transform .3s}
+  .adm-gear:hover,.adm-gear[aria-expanded="true"]{background:var(--rose);border-color:var(--rose)}
+  .adm-gear[aria-expanded="true"] i{transform:rotate(60deg)}
+  .adm-pop{position:absolute;left:12px;right:12px;bottom:calc(100% - 6px);background:#2b1b24;border:1px solid #ffffff26;border-radius:10px;box-shadow:0 10px 28px #000a;padding:6px;display:grid;gap:2px;z-index:5}
+  .adm-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:#f3e6ec;font:500 13px 'Poppins',sans-serif;text-align:left;cursor:pointer}
+  .adm-pop-item i{width:16px;text-align:center}
+  .adm-pop-item:hover,.adm-pop-item:focus-visible{background:#ffffff1a;outline:none}
+  .adm-pop-item.out:hover,.adm-pop-item.out:focus-visible{background:#a12222;color:#fff}
   .adm-main{flex:1;min-width:0}
   .adm-top{display:none}
   .adm-page{padding:28px 32px;max-width:1200px}
@@ -124,10 +146,17 @@ const NAV: NavItem[] = [
 })
 export class AdminLayoutComponent {
   auth = inject(AuthService);
+  theme = inject(ThemeService);
   private router = inject(Router);
   salon = SALON.name;
   open = signal(false);
+  menu = signal(false);   // Settings (gear) ka menu khula hai ya nahi
   items = computed(() => { const r = this.auth.role(); return r ? NAV.filter(n => n.roles.includes(r)) : []; });
+
+  toggleMenu(e: Event) { e.stopPropagation(); this.menu.update(v => !v); }
+  // Menu ke bahar click ya Esc dabane par band ho jaye
+  @HostListener('document:click') closeMenu() { this.menu.set(false); }
+  @HostListener('document:keydown.escape') closeOnEsc() { this.menu.set(false); }
 
   constructor() {
     // Logout ya session khatam hone par khud login page par
