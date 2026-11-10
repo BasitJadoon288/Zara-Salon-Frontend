@@ -1,9 +1,11 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { SalonService } from '../../core/models/models';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 
 @Component({
   selector: 'app-service-card',
   standalone: true,
+  hostDirectives: [RevealDirective],
   template: `
     <div class="card">
       @if (imageSrc) {

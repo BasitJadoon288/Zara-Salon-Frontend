@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../../core/services/salon-api.service';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
 @Component({
-  selector: 'app-newsletter-section', standalone: true, imports: [FormsModule],
-  template: `<section class="news center"><div class="container"><h2>Want to be kept in the know?</h2><p>Sign up for latest news, offers and events</p><br>
+  selector: 'app-newsletter-section', standalone: true, imports: [FormsModule, RevealDirective],
+  template: `<section class="news center"><div class="container" reveal><h2>Want to be kept in the know?</h2><p>Sign up for latest news, offers and events</p><br>
     @if (message) { <div class="msg">{{ message }}</div> }
     <div class="row"><input type="email" placeholder="Your email" [(ngModel)]="email">
     <select [(ngModel)]="gender"><option>Female</option><option>Male</option></select>

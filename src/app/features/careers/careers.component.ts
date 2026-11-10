@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../core/services/salon-api.service';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { ApplyPayload, Job } from '../../core/models/models';
 import { SectionTitleComponent } from '../../shared/components/section-title.component';
 
@@ -10,7 +11,7 @@ const blank = (): ApplyPayload => ({ jobId: '', name: '', phone: '', email: '', 
 
 // Career page: khuli jobs dekhna aur apply karna (CV optional)
 @Component({
-  selector: 'app-careers', standalone: true, imports: [FormsModule, SectionTitleComponent],
+  selector: 'app-careers', standalone: true, imports: [FormsModule, SectionTitleComponent, RevealDirective],
   template: `<section class="container"><app-section-title eyebrow="Join our team" title="Careers" /><br>
     <p class="intro">We are always happy to meet talented people. See our open positions below, or send a general application.</p>
 
@@ -18,8 +19,8 @@ const blank = (): ApplyPayload => ({ jobId: '', name: '', phone: '', email: '', 
     @else if (!jobs.length) { <p class="state">There are no open positions right now. You can still send a general application below.</p> }
     @else {
       <div class="jobs">
-        @for (j of jobs; track j._id) {
-          <article class="job">
+        @for (j of jobs; track j._id; let i = $index) {
+          <article class="job" reveal [revealDelay]="(i % 3) * 90">
             <div class="head"><h3>{{ j.title }}</h3><span class="tag">{{ j.type }}</span></div>
             <p class="meta">
               @if (j.department) { <span>{{ j.department }}</span> }
@@ -41,7 +42,7 @@ const blank = (): ApplyPayload => ({ jobId: '', name: '', phone: '', email: '', 
       </div>
     }
 
-    <div class="form" #formBox>
+    <div class="form" #formBox reveal>
       <h3>Apply now</h3>
       @if (done) { <div class="msg">Thank you! Your application was sent. We will contact you if you are shortlisted.</div>
         <button class="btn" type="button" (click)="done = false">Send another application</button>

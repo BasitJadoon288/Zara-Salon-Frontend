@@ -1,14 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { SalonApiService } from '../../core/services/salon-api.service';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { SectionTitleComponent } from '../../shared/components/section-title.component';
 import { DEFAULT_ABOUT } from '../../core/config/about.default';
 import { AboutInfo } from '../../core/models/models';
 
 @Component({
-  selector: 'app-about', standalone: true, imports: [SectionTitleComponent],
+  selector: 'app-about', standalone: true, imports: [SectionTitleComponent, RevealDirective],
   template: `<section class="container"><app-section-title eyebrow="About Us" [title]="about().title" /><br>
-    @if (about().imageUrl; as src) { <img class="pic" [src]="src" alt="About us"> }
-    @for (p of paragraphs(); track $index) { <p style="margin-bottom:14px">{{ p }}</p> }</section>`,
+    @if (about().imageUrl; as src) { <img class="pic" reveal="zoom" [src]="src" alt="About us"> }
+    @for (p of paragraphs(); track $index) { <p style="margin-bottom:14px" reveal [revealDelay]="$index * 70">{{ p }}</p> }</section>`,
   styles: [`.pic{display:block;width:100%;max-width:640px;max-height:420px;object-fit:cover;border-radius:16px;margin:0 0 22px}`]
 })
 export class AboutComponent {

@@ -1,19 +1,20 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SalonApiService } from '../../../core/services/salon-api.service';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
 import { SectionTitleComponent } from '../../../shared/components/section-title.component';
 import { DEFAULT_ABOUT } from '../../../core/config/about.default';
 import { AboutInfo } from '../../../core/models/models';
 
 @Component({
-  selector: 'app-about-section', standalone: true, imports: [RouterLink, SectionTitleComponent],
+  selector: 'app-about-section', standalone: true, imports: [RouterLink, SectionTitleComponent, RevealDirective],
   template: `<section class="container wrap">
     @if (imageSrc(); as src) {
-      <img class="pic" [src]="src" alt="Our salon" (error)="onImageError()">
+      <img class="pic" reveal="left" [src]="src" alt="Our salon" (error)="onImageError()">
     } @else {
-      <div class="pic emoji">🌹</div>
+      <div class="pic emoji" reveal="left">🌹</div>
     }
-    <div>
+    <div reveal="right">
       <app-section-title eyebrow="About" [title]="about().title" />
       <p>{{ firstParagraph() }}</p><br>
       <a routerLink="/about" class="btn">Learn more</a>

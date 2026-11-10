@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { SalonApiService } from '../../../core/services/salon-api.service';
+import { CountUpDirective } from '../../../core/directives/count-up.directive';
 import { Appointment } from '../../../core/models/models';
 
 const ymd = (date: Date): string => {
@@ -32,7 +33,7 @@ const count = (appointments: Appointment[]) => ({
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CountUpDirective],
   template: `
     <main class="dashboard">
       <header class="page-header">
@@ -92,7 +93,7 @@ const count = (appointments: Appointment[]) => ({
               <span class="stat-label">Total Appointments</span>
               <span class="stat-icon purple">▤</span>
             </div>
-            <div class="stat-value">{{ allStats().total }}</div>
+            <div class="stat-value" [countUp]="allStats().total"></div>
             <div class="stat-footer">
               <span class="status-dot purple-dot"></span>
               Scheduled for selected date
@@ -104,7 +105,7 @@ const count = (appointments: Appointment[]) => ({
               <span class="stat-label">Pending Requests</span>
               <span class="stat-icon amber">◷</span>
             </div>
-            <div class="stat-value">{{ allStats().pending }}</div>
+            <div class="stat-value" [countUp]="allStats().pending"></div>
             <div class="stat-footer">
               <span class="status-dot pending-dot"></span>
               Awaiting confirmation
@@ -116,7 +117,7 @@ const count = (appointments: Appointment[]) => ({
               <span class="stat-label">Confirmed</span>
               <span class="stat-icon green">✓</span>
             </div>
-            <div class="stat-value">{{ allStats().confirmed }}</div>
+            <div class="stat-value" [countUp]="allStats().confirmed"></div>
             <div class="stat-footer">
               <span class="status-dot confirmed-dot"></span>
               Confirmed appointments
@@ -128,7 +129,7 @@ const count = (appointments: Appointment[]) => ({
               <span class="stat-label">Cancelled</span>
               <span class="stat-icon red">×</span>
             </div>
-            <div class="stat-value">{{ allStats().cancelled }}</div>
+            <div class="stat-value" [countUp]="allStats().cancelled"></div>
             <div class="stat-footer">
               <span class="status-dot cancelled-dot"></span>
               Cancelled appointments
@@ -180,31 +181,31 @@ const count = (appointments: Appointment[]) => ({
               <span class="overview-icon">◎</span>
             </div>
 
-            <div class="overview-number">{{ receivedStats().total }}</div>
+            <div class="overview-number" [countUp]="receivedStats().total"></div>
             <p class="overview-caption">Total requests received</p>
 
             <div class="overview-divider"></div>
 
             <div class="overview-row">
               <span><i class="legend-dot pending-dot"></i>Pending</span>
-              <strong>{{ receivedStats().pending }}</strong>
+              <strong [countUp]="receivedStats().pending"></strong>
             </div>
 
             <div class="overview-row">
               <span><i class="legend-dot confirmed-dot"></i>Confirmed</span>
-              <strong>{{ receivedStats().confirmed }}</strong>
+              <strong [countUp]="receivedStats().confirmed"></strong>
             </div>
 
             <div class="overview-row">
               <span><i class="legend-dot cancelled-dot"></i>Cancelled</span>
-              <strong>{{ receivedStats().cancelled }}</strong>
+              <strong [countUp]="receivedStats().cancelled"></strong>
             </div>
 
             <div class="overview-divider"></div>
 
             <div class="all-time-row">
               <span>All-time appointments</span>
-              <strong>{{ allStats().total }}</strong>
+              <strong [countUp]="allStats().total"></strong>
             </div>
           </article>
         </section>

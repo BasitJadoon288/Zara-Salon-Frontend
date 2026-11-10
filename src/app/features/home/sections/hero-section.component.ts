@@ -14,8 +14,10 @@ const EMPTY: HeroSlide = { title: '', text: '', bg: BACKUP }; // slides aane tak
   selector: 'app-hero-section', standalone: true, imports: [RouterLink],
   template: `<section class="hero" [style.background]="current.bg"><div class="container">
     <p class="eyebrow" style="color:#fff">Ultimate Experience</p>
-    @if (current.title) { <h1>{{ current.title }}</h1> }
-    @if (current.text) { <p>{{ current.text }}</p> }
+    @for (k of [index]; track k) {   <!-- slide badalne par ye dobara banta hai, is liye text phir se animate hota hai -->
+      @if (current.title) { <h1>{{ current.title }}</h1> }
+      @if (current.text) { <p class="lead">{{ current.text }}</p> }
+    }
     <a routerLink="/about" class="btn outline">Learn More</a>&nbsp;
     <button class="btn" (click)="modal.open()">Appointment</button>
     @if (slides.length > 1) {
@@ -25,6 +27,11 @@ const EMPTY: HeroSlide = { title: '', text: '', bg: BACKUP }; // slides aane tak
   styles: [`.hero{color:#fff;padding:140px 0;transition:background .6s}.hero h1{color:#fff;font-size:56px;margin:8px 0 14px;text-transform:uppercase}
   .hero p{max-width:620px;margin-bottom:24px}.dots{margin-top:30px}
   .dots span{display:inline-block;width:12px;height:12px;border-radius:50%;background:#fff6;margin-right:8px;cursor:pointer}.dots .on{background:#fff}
+  .hero .eyebrow{animation:fadeUp .6s var(--ease) backwards}
+  .hero h1{animation:fadeUp .75s var(--ease) .05s backwards}
+  .hero .lead{animation:fadeUp .75s var(--ease) .18s backwards}
+  .hero .btn{animation:fadeUp .7s var(--ease) .32s backwards}
+  .dots span{transition:background .3s,transform .3s var(--ease)}.dots span:hover{transform:scale(1.25)}.dots .on{transform:scale(1.2)}
   @media(max-width:760px){.hero h1{font-size:36px}}`]
 })
 export class HeroSectionComponent implements OnInit, OnDestroy {

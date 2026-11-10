@@ -23,7 +23,7 @@ import { endTime, formatDuration, to12h } from '../../core/utils/duration.util';
       @else if (avail) {
         <div class="slots">
           @for (s of avail.slots; track s.time) {
-            <button type="button" class="slot" [class.sel]="time === s.time" [class.covered]="isCovered(s.time)" [class.taken]="!s.available" [class.brk]="s.reason === 'break'"
+            <button type="button" class="slot" [style.--n]="$index" [class.sel]="time === s.time" [class.covered]="isCovered(s.time)" [class.taken]="!s.available" [class.brk]="s.reason === 'break'"
               [disabled]="!s.available" [title]="tip(s)" (click)="pick(s.time)">
               {{ to12(s.time) }}
               @if (!s.available) { <small>{{ tag(s) }}</small> }
@@ -47,8 +47,10 @@ import { endTime, formatDuration, to12h } from '../../core/utils/duration.util';
   .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:42px;padding:6px 4px;border-radius:8px;
     border:1px solid var(--field-line);background:var(--field-bg);color:var(--text);font:500 13px 'Poppins',sans-serif;cursor:pointer}
-  .slot:hover:not(:disabled){border-color:var(--rose-ink);color:var(--rose-ink)}
-  .slot.sel{background:var(--rose);border-color:var(--rose);color:#fff}
+  .slot{animation:slotIn .35s var(--ease) backwards;animation-delay:calc(min(var(--n,0),24) * 16ms);transition:background-color .2s,border-color .2s,color .2s,transform .15s var(--ease)}
+  .slot:hover:not(:disabled){border-color:var(--rose-ink);color:var(--rose-ink);transform:translateY(-2px)}
+  .slot:active:not(:disabled){transform:scale(.95)}
+  .slot.sel{background:var(--rose);border-color:var(--rose);color:#fff;transform:scale(1.04)}
   .slot.covered:not(.sel){background:var(--soft);border-color:var(--rose);color:var(--rose-ink)}
   .slot.taken{background:var(--msg-bad-bg);border-color:transparent;color:var(--msg-bad-ink);cursor:not-allowed;opacity:.75;text-decoration:line-through}
   .slot.brk{background:var(--soft);color:var(--muted);opacity:.85}

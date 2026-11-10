@@ -1,15 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SalonApiService } from '../../core/services/salon-api.service';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { ContactPayload } from '../../core/models/models';
 import { SALON } from '../../core/config/salon.config';
 import { SectionTitleComponent } from '../../shared/components/section-title.component';
 const empty = (): ContactPayload => ({ name: '', email: '', phone: '', message: '' });
 @Component({
-  selector: 'app-contact', standalone: true, imports: [FormsModule, SectionTitleComponent],
+  selector: 'app-contact', standalone: true, imports: [FormsModule, SectionTitleComponent, RevealDirective],
   template: `<section class="container"><app-section-title eyebrow="Contact" title="Get in touch" /><br>
-    <div class="wrap"><div><p>📞 {{ salon.phone }}</p><p>✉ {{ salon.email }}</p><p>📍 {{ salon.address }}</p></div>
-    <div>@if (message) { <div class="msg" [class.err]="isError">{{ message }}</div> }
+    <div class="wrap"><div reveal="left"><p>📞 {{ salon.phone }}</p><p>✉ {{ salon.email }}</p><p>📍 {{ salon.address }}</p></div>
+    <div reveal="right">@if (message) { <div class="msg" [class.err]="isError">{{ message }}</div> }
       <input placeholder="Name *" [(ngModel)]="form.name"><input placeholder="Email" [(ngModel)]="form.email">
       <input placeholder="Phone" [(ngModel)]="form.phone"><textarea rows="5" placeholder="Message *" [(ngModel)]="form.message"></textarea>
       <button class="btn" (click)="send()">Send</button></div></div></section>`,

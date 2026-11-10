@@ -1,0 +1,210 @@
+/* =====================================================================
+   Transitions aur animations (website + admin portal dono ke liye)
+   - Page badalne par narm entry
+   - Scroll karne par cheezein nazar aana (.reveal-init / .in, RevealDirective se)
+   - Buttons, cards, inputs, links ka hover / focus
+   - Modal, popup, menu ka khulna
+   - Admin: cards, tables, sidebar, dashboard
+   Jinhein animation pasand nahi (device ki "Reduce motion" setting) un ke liye sab band hai (neeche aakhir mein).
+   ===================================================================== */
+
+:root {
+  --ease: cubic-bezier(.22, .61, .36, 1);       /* narm shuruaat, narm rukna */
+  --ease-spring: cubic-bezier(.34, 1.4, .64, 1); /* halka sa uchhal */
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeUp { from { opacity: 0; transform: translate3d(0, 22px, 0) } to { opacity: 1; transform: none } }
+@keyframes fadeDown { from { opacity: 0; transform: translate3d(0, -16px, 0) } to { opacity: 1; transform: none } }
+@keyframes pageIn { from { opacity: 0; transform: translate3d(0, 16px, 0) } to { opacity: 1; transform: none } }
+@keyframes slideInRight { from { opacity: 0; transform: translate3d(40px, 0, 0) } to { opacity: 1; transform: none } }
+@keyframes slideInLeft { from { opacity: 0; transform: translate3d(-18px, 0, 0) } to { opacity: 1; transform: none } }
+@keyframes popIn { from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.96) } to { opacity: 1; transform: none } }
+@keyframes popUp { from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.94) } to { opacity: 1; transform: none } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(.9) } to { opacity: 1; transform: none } }
+@keyframes growUp { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+@keyframes rowIn { from { opacity: 0; transform: translate3d(0, 8px, 0) } to { opacity: 1; transform: none } }
+@keyframes slotIn { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: none } }
+@keyframes msgIn { from { opacity: 0; transform: translate3d(0, -8px, 0) } to { opacity: 1; transform: none } }
+@keyframes waPulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, .55) }
+  70% { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0) }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0) }
+}
+
+/* ---------- Page badalna ---------- */
+/* Route ka page <router-outlet> ke theek baad aata hai */
+router-outlet + * { display: block; animation: pageIn .55s var(--ease) backwards; }
+/* Admin: poora shell sirf halka sa fade, andar ka page halka fade */
+router-outlet + app-admin-layout,
+router-outlet + app-admin-login { animation: fadeIn .35s ease backwards; }
+.adm-page router-outlet + * { animation: fadeIn .3s ease backwards; }
+
+/* ---------- Scroll par nazar aana (RevealDirective) ---------- */
+.reveal-init {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity .8s var(--ease) var(--d, 0ms), transform .8s var(--ease) var(--d, 0ms);
+  will-change: opacity, transform;
+}
+.reveal-init.reveal-left { transform: translate3d(-36px, 0, 0); }
+.reveal-init.reveal-right { transform: translate3d(36px, 0, 0); }
+.reveal-init.reveal-zoom { transform: scale(.94); }
+.reveal-init.in { opacity: 1; transform: none; }
+app-section-title { display: block; }
+
+/* Grid ke cards ek ke baad ek (har 4 mein se) */
+.grid > .reveal-init:nth-child(4n + 2) { --d: 80ms; }
+.grid > .reveal-init:nth-child(4n + 3) { --d: 160ms; }
+.grid > .reveal-init:nth-child(4n + 4) { --d: 240ms; }
+
+/* ---------- Buttons ---------- */
+.btn, .adm-btn, .adm-wa {
+  transition: transform .2s var(--ease), box-shadow .25s var(--ease), background-color .2s, color .2s, border-color .2s, filter .2s, opacity .2s;
+}
+@media (hover: hover) {
+  .btn:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 8px 18px var(--shadow); filter: brightness(1.06); }
+  .btn.outline:hover:not([disabled]) { background: #ffffff26; }
+  .adm-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+  .adm-wa:hover { transform: translateY(-1px); filter: brightness(1.06); }
+}
+.btn:active:not([disabled]), .adm-btn:active:not(:disabled), .adm-wa:active { transform: translateY(0) scale(.97); box-shadow: none; }
+
+/* ---------- Form fields ---------- */
+input, select, textarea {
+  transition: border-color .2s, box-shadow .25s, background-color .2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--rose-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rose) 22%, transparent);
+}
+input[type="checkbox"], input[type="radio"] { transition: none; box-shadow: none; }
+
+/* ---------- Cards aur links ---------- */
+.job { transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+@media (hover: hover) {
+  .job:hover { transform: translateY(-3px); box-shadow: 0 10px 26px var(--shadow), 0 0 0 1px var(--card-ring); }
+}
+app-service-card .card:hover { box-shadow: 0 14px 30px var(--shadow), 0 0 0 1px var(--card-ring); }
+app-service-card .card img { transition: transform .5s var(--ease); }
+app-service-card .card:hover img { transform: scale(1.03); }
+
+app-footer a { display: inline-block; transition: color .2s, transform .2s var(--ease); }
+app-footer a:hover { color: #fff; transform: translateX(4px); }
+
+/* Header: aate hi neeche ko utarna, aur links ke neeche line */
+app-header header { animation: fadeDown .5s var(--ease) backwards; }
+@media (min-width: 901px) {
+  app-header nav a:not(.btn) { position: relative; transition: color .2s; }
+  app-header nav a:not(.btn)::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; border-radius: 2px;
+    background: var(--rose-ink); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease);
+  }
+  app-header nav a:not(.btn):hover::after, app-header nav a.on::after { transform: scaleX(1); }
+}
+
+/* Social bar: ek ek karke andar aana, WhatsApp halka sa dhadakta hai */
+app-social-bar a { animation: slideInRight .55s var(--ease) backwards; }
+app-social-bar a:nth-child(1) { animation: slideInRight .55s var(--ease) .8s backwards, waPulse 2.6s ease-out 2.2s infinite; }
+app-social-bar a:nth-child(2) { animation-delay: .9s; }
+app-social-bar a:nth-child(3) { animation-delay: 1s; }
+app-social-bar a:nth-child(4) { animation-delay: 1.1s; }
+app-social-bar a:nth-child(5) { animation-delay: 1.2s; }
+
+/* ---------- Modal, popup, lightbox ---------- */
+.overlay, .lb { animation: fadeIn .22s ease both; }
+.overlay > .box { animation: popIn .32s var(--ease) both; }
+.lb figure { animation: zoomIn .3s var(--ease) both; }
+.lb .nav, .lb .x { transition: background-color .2s, transform .2s; }
+
+/* ---------- Messages ---------- */
+.msg { animation: msgIn .35s var(--ease); }
+
+/* ---------- Theme badalte waqt rang narmi se badlen (class ThemeService lagata hai) ---------- */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease, box-shadow .4s ease, fill .4s ease, stroke .4s ease !important;
+}
+
+/* =====================================================================
+   Admin portal
+   ===================================================================== */
+.adm-head { animation: fadeDown .4s var(--ease) backwards; }
+.adm-card, .adm-page .stat-card, .adm-page .panel { animation: fadeUp .5s var(--ease) backwards; }
+.adm-card:nth-child(3), .adm-page .panel { animation-delay: .06s; }
+.adm-card:nth-child(4), .adm-page .stat-card:nth-child(2) { animation-delay: .1s; }
+.adm-card:nth-child(5), .adm-page .stat-card:nth-child(3) { animation-delay: .14s; }
+.adm-card:nth-child(n + 6), .adm-page .stat-card:nth-child(4) { animation-delay: .18s; }
+.adm-shade { animation: fadeIn .2s ease both; }
+
+/* Sidebar */
+.adm-side nav a { animation: slideInLeft .4s var(--ease) backwards; transition: background-color .25s, color .25s, transform .2s var(--ease); }
+@media (hover: hover) { .adm-side nav a:hover:not(.on) { transform: translateX(3px); } }
+.adm-side nav a i { transition: transform .25s var(--ease), opacity .2s; }
+.adm-side nav a:hover i { transform: scale(1.15); opacity: 1; }
+.adm-pop { transform-origin: bottom right; animation: popUp .18s var(--ease) both; }
+.adm-pop-item { transition: background-color .15s, color .15s; }
+
+/* Tables: rows halke se aate hain, hover par rang badalta hai */
+.adm-table td, .appointments-table td { transition: background-color .2s; }
+.adm-table tr:hover td, .appointments-table tbody tr:hover td { background: color-mix(in srgb, var(--rose) 6%, transparent); }
+.adm-table tr:nth-child(n + 2), .appointments-table tbody tr { animation: rowIn .4s var(--ease) backwards; }
+.badge { transition: background-color .25s, color .25s; }
+
+/* Admin gallery ki pictures */
+.adm-page .grid > .item { transition: transform .2s var(--ease), box-shadow .2s var(--ease), outline-color .2s; }
+@media (hover: hover) { .adm-page .grid > .item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px var(--shadow); } }
+
+/* Dashboard ka chart: bars neeche se uthte hain */
+.chart-bar { transform-origin: bottom; animation: growUp .8s var(--ease) backwards; animation-delay: .25s; }
+.chart-column:nth-child(2) .chart-bar { animation-delay: .32s; }
+.chart-column:nth-child(3) .chart-bar { animation-delay: .39s; }
+.chart-column:nth-child(4) .chart-bar { animation-delay: .46s; }
+.chart-column:nth-child(5) .chart-bar { animation-delay: .53s; }
+.chart-column:nth-child(6) .chart-bar { animation-delay: .6s; }
+.chart-column:nth-child(7) .chart-bar { animation-delay: .67s; }
+
+/* Sidebar ke links ek ke baad ek */
+.adm-side nav a:nth-child(1) { animation-delay: 0.07s; }
+.adm-side nav a:nth-child(2) { animation-delay: 0.1s; }
+.adm-side nav a:nth-child(3) { animation-delay: 0.13s; }
+.adm-side nav a:nth-child(4) { animation-delay: 0.16s; }
+.adm-side nav a:nth-child(5) { animation-delay: 0.19s; }
+.adm-side nav a:nth-child(6) { animation-delay: 0.22s; }
+.adm-side nav a:nth-child(7) { animation-delay: 0.25s; }
+.adm-side nav a:nth-child(8) { animation-delay: 0.28s; }
+.adm-side nav a:nth-child(9) { animation-delay: 0.31s; }
+.adm-side nav a:nth-child(10) { animation-delay: 0.34s; }
+.adm-side nav a:nth-child(11) { animation-delay: 0.37s; }
+.adm-side nav a:nth-child(12) { animation-delay: 0.4s; }
+.adm-side nav a:nth-child(13) { animation-delay: 0.43s; }
+.adm-side nav a:nth-child(14) { animation-delay: 0.46s; }
+.adm-side nav a:nth-child(15) { animation-delay: 0.49s; }
+.adm-side nav a:nth-child(16) { animation-delay: 0.52s; }
+
+/* Table ki pehli rows ek ke baad ek (header row ke baad) */
+.adm-table tr:nth-child(2), .appointments-table tbody tr:nth-child(1) { animation-delay: 0.0s; }
+.adm-table tr:nth-child(3), .appointments-table tbody tr:nth-child(2) { animation-delay: 0.03s; }
+.adm-table tr:nth-child(4), .appointments-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.adm-table tr:nth-child(5), .appointments-table tbody tr:nth-child(4) { animation-delay: 0.09s; }
+.adm-table tr:nth-child(6), .appointments-table tbody tr:nth-child(5) { animation-delay: 0.12s; }
+.adm-table tr:nth-child(7), .appointments-table tbody tr:nth-child(6) { animation-delay: 0.15s; }
+.adm-table tr:nth-child(8), .appointments-table tbody tr:nth-child(7) { animation-delay: 0.18s; }
+.adm-table tr:nth-child(9), .appointments-table tbody tr:nth-child(8) { animation-delay: 0.21s; }
+.adm-table tr:nth-child(10), .appointments-table tbody tr:nth-child(9) { animation-delay: 0.24s; }
+.adm-table tr:nth-child(11), .appointments-table tbody tr:nth-child(10) { animation-delay: 0.27s; }
+.adm-table tr:nth-child(12), .appointments-table tbody tr:nth-child(11) { animation-delay: 0.3s; }
+.adm-table tr:nth-child(13), .appointments-table tbody tr:nth-child(12) { animation-delay: 0.33s; }
+
+/* =====================================================================
+   "Reduce motion" (device ki accessibility setting): sab animation band
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal-init { opacity: 1 !important; transform: none !important; }
+}

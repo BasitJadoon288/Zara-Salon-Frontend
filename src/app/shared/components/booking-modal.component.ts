@@ -70,7 +70,7 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
   .note{font-size:13px;color:var(--muted);margin-bottom:8px}.note.ok{color:var(--msg-ok-ink)}
   .otp{margin:0 0 16px}.otp input{margin-top:8px}
   .lead{margin:14px 0 6px;color:var(--muted);font-size:13px}
-  .code{font:700 26px 'Poppins',sans-serif;letter-spacing:4px;margin-bottom:10px;color:var(--rose-ink);word-break:break-all}
+  .code{animation:popIn .5s var(--ease-spring) .15s backwards;font:700 26px 'Poppins',sans-serif;letter-spacing:4px;margin-bottom:10px;color:var(--rose-ink);word-break:break-all}
   .fine{font-size:13px;color:var(--muted);margin:0 0 10px}
   .manage{display:block;margin:12px 0;font-size:13px;color:var(--rose-ink);text-decoration:underline}`]
 })

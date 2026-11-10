@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { SalonApiService } from '../../../core/services/salon-api.service';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
 import { SectionTitleComponent } from '../../../shared/components/section-title.component';
 import { Review } from '../../../core/models/models';
 import { REVIEWS } from '../home.data';
@@ -15,7 +16,7 @@ import { REVIEWS } from '../home.data';
 @Component({
   selector: 'app-reviews-section',
   standalone: true,
-  imports: [SectionTitleComponent],
+  imports: [SectionTitleComponent, RevealDirective],
 
   template: `
     <section class="soft center">
@@ -25,7 +26,7 @@ import { REVIEWS } from '../home.data';
           title="Customer Reviews"
         />
 
-        <div class="slider">
+        <div class="slider" reveal>
           <div
             class="track"
             [style.transform]="

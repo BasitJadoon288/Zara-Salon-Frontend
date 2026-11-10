@@ -1,12 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { BookingModalService } from '../../../core/services/booking-modal.service';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
 
 @Component({
-  selector: 'app-promo-section', standalone: true,
+  selector: 'app-promo-section', standalone: true, imports: [RevealDirective],
   template: `<section class="promo center" [style.background]="bg">
-    <p class="eyebrow" style="color:#fff">Book Online Now</p>
-    <h2>Save up to 20% off</h2>
-    <button class="btn outline" (click)="modal.open()">Book Appointment</button>
+    <p class="eyebrow" style="color:#fff" reveal>Book Online Now</p>
+    <h2 reveal [revealDelay]="100">Save up to 20% off</h2>
+    <button class="btn outline" reveal="zoom" [revealDelay]="220" (click)="modal.open()">Book Appointment</button>
   </section>`,
   styles: [`
   .promo{color:#fff;padding:100px 0}

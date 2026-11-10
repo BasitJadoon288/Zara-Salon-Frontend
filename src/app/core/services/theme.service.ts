@@ -38,8 +38,15 @@ export class ThemeService {
 
   toggle() { this.setTheme(this.isDark() ? 'light' : 'dark'); }
 
+  private animTimer?: ReturnType<typeof setTimeout>;
+
   setTheme(theme: ThemeName, remember = true) {
     this.theme.set(theme);
+    // Rang achanak nahi, narmi se badlen: thori der ke liye html par ek class lagti hai (animations.css)
+    const root = document.documentElement;
+    root.classList.add('theme-anim');
+    clearTimeout(this.animTimer);
+    this.animTimer = setTimeout(() => root.classList.remove('theme-anim'), 500);
     this.apply(theme);
     if (remember) { try { localStorage.setItem(KEY, theme); } catch { /* private mode */ } }
   }

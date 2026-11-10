@@ -1,13 +1,14 @@
 import { Component, HostListener, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SalonApiService } from '../../core/services/salon-api.service';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { GalleryPage } from '../../core/models/models';
 import { SectionTitleComponent } from '../../shared/components/section-title.component';
 import { PaginationComponent } from '../../shared/components/pagination.component';
 
 // Gallery: bridal pictures, ek page par 20. Picture par click karne se bari ho jati hai.
 @Component({
-  selector: 'app-gallery', standalone: true, imports: [SectionTitleComponent, PaginationComponent],
+  selector: 'app-gallery', standalone: true, imports: [SectionTitleComponent, PaginationComponent, RevealDirective],
   template: `<section class="container"><app-section-title eyebrow="Our work" title="Bridal Gallery" /><br>
     @if (error) { <p class="state bad">{{ error }}</p> }
     @else if (!data) { <div class="grid"> @for (n of skeleton; track n) { <div class="cell sk"></div> } </div> }
@@ -15,7 +16,7 @@ import { PaginationComponent } from '../../shared/components/pagination.componen
     @else {
       <div class="grid">
         @for (g of data.items; track g._id; let i = $index) {
-          <button type="button" class="cell" (click)="open(i)" [attr.aria-label]="g.caption || 'Open picture ' + (i + 1)">
+          <button type="button" class="cell" reveal="zoom" [revealDelay]="(i % 5) * 60" (click)="open(i)" [attr.aria-label]="g.caption || 'Open picture ' + (i + 1)">
             <img [src]="g.thumbUrl" [alt]="g.caption || 'Bridal look'" loading="lazy" decoding="async">
             @if (g.caption) { <span class="cap">{{ g.caption }}</span> }
           </button>
@@ -33,10 +34,12 @@ import { PaginationComponent } from '../../shared/components/pagination.componen
         <button type="button" class="nav prev" (click)="step(-1); $event.stopPropagation()" aria-label="Previous picture">&lsaquo;</button>
         <button type="button" class="nav next" (click)="step(1); $event.stopPropagation()" aria-label="Next picture">&rsaquo;</button>
       }
-      <figure (click)="$event.stopPropagation()">
-        <img [src]="data.items[viewing].imageUrl" [alt]="data.items[viewing].caption || 'Bridal look'">
-        <figcaption>{{ data.items[viewing].caption }}<small>{{ viewing + 1 }} / {{ data.items.length }}</small></figcaption>
-      </figure>
+      @for (k of [viewing]; track k) {   <!-- picture badalne par dobara banta hai, is liye animation phir chalti hai -->
+        <figure (click)="$event.stopPropagation()">
+          <img [src]="data.items[k].imageUrl" [alt]="data.items[k].caption || 'Bridal look'">
+          <figcaption>{{ data.items[k].caption }}<small>{{ k + 1 }} / {{ data.items.length }}</small></figcaption>
+        </figure>
+      }
     </div>
   }`,
   styles: [`

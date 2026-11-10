@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { SalonApiService } from '../../core/services/salon-api.service';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { ManageAppointment } from '../../core/models/models';
 import { SALON } from '../../core/config/salon.config';
 import { SectionTitleComponent } from '../../shared/components/section-title.component';
@@ -12,9 +13,9 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
 
 // Customer apne booking code se appointment dekh sakta hai, waqt badal sakta hai ya cancel kar sakta hai
 @Component({
-  selector: 'app-manage', standalone: true, imports: [FormsModule, SectionTitleComponent, SlotPickerComponent],
+  selector: 'app-manage', standalone: true, imports: [FormsModule, SectionTitleComponent, SlotPickerComponent, RevealDirective],
   template: `<section class="container"><app-section-title eyebrow="Your booking" title="Manage your appointment" /><br>
-    <div class="box">
+    <div class="box" reveal>
       @if (message) { <div class="msg" [class.err]="isError">{{ message }}</div> }
 
       @if (!appt) {

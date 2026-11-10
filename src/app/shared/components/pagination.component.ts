@@ -16,6 +16,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   styles: [`
   .pg{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin:26px 0 6px}
   button{min-width:38px;height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--field-line);background:var(--field-bg);color:var(--text);font:500 13px 'Poppins',sans-serif;cursor:pointer}
+  button{transition:background-color .2s,color .2s,border-color .2s,transform .15s var(--ease)}
+  button:active:not(:disabled){transform:scale(.94)}
   button:hover:not(:disabled):not(.on){border-color:var(--rose-ink);color:var(--rose-ink)}
   button.on{background:var(--rose);border-color:var(--rose);color:#fff;cursor:default}
   button:disabled{opacity:.45;cursor:default}

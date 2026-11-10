@@ -39,7 +39,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle.compo
   background-repeat: no-repeat;
 }
   .corner{position:fixed;top:16px;right:16px;z-index:2}
-  .box{background:var(--surface);box-shadow:0 0 0 1px var(--card-ring);border-radius:16px;padding:34px;width:100%;max-width:400px}
+  .box{animation:popIn .55s var(--ease) .1s backwards;background:var(--surface);box-shadow:0 0 0 1px var(--card-ring);border-radius:16px;padding:34px;width:100%;max-width:400px}
   h1{font-size:26px;color:var(--rose-ink)}
   .sub{margin:4px 0 22px;color:var(--muted)}
   label{display:block;font-size:13px;margin-bottom:6px;color:var(--text)}
