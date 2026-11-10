@@ -77,8 +77,8 @@ export class SalonApiService {
   // ---------- Salon timing (admin) ----------
   getTiming() { return this.http.get<TimingSettings>(`${this.base}/admin/timing`); }
   saveTiming(t: TimingSettings) {
-    const { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours } = t;
-    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime, closeTime, slotStep, chairs, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours });
+    const { openTime, closeTime, slotStep, chairs, seats, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours } = t;
+    return this.http.put<TimingSettings>(`${this.base}/admin/timing`, { openTime, closeTime, slotStep, chairs, seats, closedDays, branches, breaks, closures, holdHours, maxActivePerPhone, requireEmailOtp, reminderEmail, customerChanges, changeCutoffHours });
   }
   runReminders() { return this.http.post<ReminderResult>(`${this.base}/admin/timing/reminders/run`, {}); }
 

@@ -44,7 +44,7 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
     <input type="date" [min]="today" [ngModel]="form.date" (ngModelChange)="form.date = $event; form.time = ''">
 
     <app-slot-picker [branch]="form.branch" [service]="form.service" [date]="form.date" [stylist]="form.stylistId || ''"
-      [time]="form.time" (timeChange)="form.time = $event" />
+      [time]="form.time" [reload]="reloadSlots" (timeChange)="form.time = $event" />
 
     @if (rules?.requireEmailOtp) {
       <div class="otp">
@@ -77,7 +77,7 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
 export class BookingModalComponent implements OnDestroy {
   modal = inject(BookingModalService); api = inject(SalonApiService);
   branches = BRANCHES; form = empty(); message = ''; isError = false; sending = false;
-  today = todayStr();
+  today = todayStr(); reloadSlots = 0;
   rules: BookingRules | null = null; stylists: StylistLite[] = [];
   done: BookingResult | null = null; copied = false;
   otpSent = false; otpBusy = false; cooldown = 0; private timer?: ReturnType<typeof setInterval>;
@@ -88,8 +88,12 @@ export class BookingModalComponent implements OnDestroy {
   }
   ngOnDestroy() { clearInterval(this.timer); }
 
-  close() { this.modal.close(); this.done = null; this.message = ''; }
-  again() { const { branch, service, date } = this.form; this.form = { ...empty(), branch, service, date }; this.done = null; this.message = ''; this.otpSent = false; this.changed(true); }
+  // Booking ho chuki ho to band karte waqt form saaf (warna purana, ab booked waqt dobara dikhta). Booking nahi hui to bhari hui fields wahin rehti hain.
+  close() {
+    if (this.done) { this.form = empty(); this.stylists = []; this.otpSent = false; }
+    this.modal.close(); this.done = null; this.message = '';
+  }
+  again() { const { name, phone, email, branch, service, date } = this.form; this.form = { ...empty(), name, phone, email, branch, service, date }; this.done = null; this.message = ''; this.otpSent = false; this.changed(true); }
 
   // Branch ya service badalne par us ke stylists mangwayen
   changed(keep = false) {
@@ -131,7 +135,7 @@ export class BookingModalComponent implements OnDestroy {
       error: e => {
         this.sending = false;
         this.show(e.error?.error || 'Something went wrong. Try again.', true);
-        if (e.status === 409) { const t = this.form.date; this.form.date = ''; setTimeout(() => this.form.date = t); } // kisi aur ne ye waqt le liya: taza slots dikhayen
+        if (e.status === 409) { this.form.time = ''; this.reloadSlots++; } // kisi aur ne ye waqt le liya: sirf slots taza karein, baaki fields na chhedein
       }
     });
   }

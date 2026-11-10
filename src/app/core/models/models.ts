@@ -26,11 +26,11 @@ export interface StylistLite { _id: string; name: string; }
 export interface Stylist { _id?: string; name: string; branch: string; services: string[]; workDays: number[]; startTime: string; endTime: string; active: boolean; }
 
 // Salon ke timing aur booking rules (sirf admin badal sakta hai)
-export interface BranchTiming { openTime: string; closeTime: string; chairs: number; closedDays: number[]; }
+export interface BranchTiming { openTime: string; closeTime: string; chairs?: number; closedDays: number[]; }
 export interface BreakRule { label: string; start: string; end: string; days: number[]; branch: string; }
 export interface Closure { from: string; to: string; branch: string; reason: string; }
 export interface TimingSettings {
-  openTime: string; closeTime: string; slotStep: number; chairs: number; closedDays: number[];
+  openTime: string; closeTime: string; slotStep: number; chairs: number; seats: Record<string, number | null>; closedDays: number[];
   branches: Record<string, BranchTiming>; breaks: BreakRule[]; closures: Closure[];
   holdHours: number; maxActivePerPhone: number; requireEmailOtp: boolean; reminderEmail: boolean; customerChanges: boolean; changeCutoffHours: number;
   slotSteps?: number[]; maxChairs?: number; maxBreaks?: number; maxClosures?: number; branchNames?: string[]; emailReady?: boolean;

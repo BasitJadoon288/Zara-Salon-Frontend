@@ -60,7 +60,7 @@ import { endTime, formatDuration, to12h } from '../../core/utils/duration.util';
 export class SlotPickerComponent implements OnChanges, OnDestroy {
   private api = inject(SalonApiService);
   @Input() branch = ''; @Input() service = ''; @Input() date = '';
-  @Input() stylist = ''; @Input() exclude = '';
+  @Input() stylist = ''; @Input() exclude = ''; @Input() reload = 0;   // badalne par slots dobara mangwata hai (form ki baaki fields nahi chhedta)
   @Input() time = ''; @Output() timeChange = new EventEmitter<string>();
   @Input() hint = 'Select branch, service and date to see available times.';
 
@@ -69,7 +69,7 @@ export class SlotPickerComponent implements OnChanges, OnDestroy {
   fmt = formatDuration; to12 = to12h;
 
   ngOnChanges(ch: SimpleChanges) {
-    if (['branch', 'service', 'date', 'stylist', 'exclude'].some(k => ch[k])) this.load();
+    if (['branch', 'service', 'date', 'stylist', 'exclude', 'reload'].some(k => ch[k])) this.load();
   }
   ngOnDestroy() { this.sub?.unsubscribe(); }
 

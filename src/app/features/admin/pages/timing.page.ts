@@ -45,11 +45,23 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
 
         <label>Appointments allowed at the same time (in one branch)</label>
         <input type="number" min="1" [max]="maxChairs()" step="1" [(ngModel)]="c.chairs">
-        <span class="adm-note">1 means one customer at a time. This is used for branches that have <b>no team members</b> added. Branches with a team follow each person's schedule instead (see Team).</span>
+        <span class="adm-note">Used for a branch whose seats are not set in the <b>Seats in each branch</b> section below.</span>
 
         <label>Weekly off days</label>
         <div class="chips">@for (d of order; track d) { <label class="adm-chk"><input type="checkbox" [checked]="c.closedDays.includes(d)" (change)="toggle(c.closedDays, d)">{{ names[d] }}</label> }</div>
         <span class="adm-note">The salon is closed on the ticked days (for example Sunday).</span>
+      </div>
+    </div>
+
+    <!-- Har branch ki seats -->
+    <div class="adm-card">
+      <h3>Seats in each branch</h3>
+      <p class="adm-note sp">Appointments are booked against these seats. When all seats of a branch are taken at a time, that time shows as booked.</p>
+      <div class="adm-form">
+        @for (b of branchNames(); track b) {
+          <label>{{ b }}</label>
+          <input type="number" min="1" [max]="maxChairs()" step="1" [placeholder]="'Default: ' + c.chairs" [(ngModel)]="c.seats[b]">
+        }
       </div>
     </div>
 
@@ -66,8 +78,6 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/
                 <div><label>Opens at</label><input type="time" [(ngModel)]="bt.openTime"></div>
                 <div><label>Closes at</label><input type="time" [(ngModel)]="bt.closeTime"></div>
               </div>
-              <label>Appointments allowed at the same time</label>
-              <input type="number" min="1" [max]="maxChairs()" step="1" [(ngModel)]="bt.chairs">
               <label>Weekly off days</label>
               <div class="chips">@for (d of order; track d) { <label class="adm-chk"><input type="checkbox" [checked]="bt.closedDays.includes(d)" (change)="toggle(bt.closedDays, d)">{{ names[d] }}</label> }</div>
             </div>
@@ -210,7 +220,11 @@ export class TimingPage {
   // Server se aaye settings ko form mein lagayen (copy, taake form ki edit server ke object ko na chhede)
   private apply(t: TimingSettings) {
     const copy: TimingSettings = JSON.parse(JSON.stringify(t));
-    copy.branches ||= {}; copy.breaks ||= []; copy.closures ||= []; copy.closedDays ||= [];
+    copy.branches ||= {}; copy.breaks ||= []; copy.closures ||= []; copy.closedDays ||= []; copy.seats ||= {};
+    for (const [name, b] of Object.entries(copy.branches)) {            // purani branch-wali seats ab "Seats in each branch" mein dikhti hain
+      if (b.chairs && !copy.seats[name]) copy.seats[name] = b.chairs;
+      delete b.chairs;
+    }
     this.cfg.set(copy);
     if (t.slotSteps) this.steps.set(t.slotSteps);
     if (t.maxChairs) this.maxChairs.set(t.maxChairs);
@@ -247,7 +261,7 @@ export class TimingPage {
   toggleBranch(name: string) {
     const c = this.cfg(); if (!c) return;
     if (c.branches[name]) delete c.branches[name];
-    else c.branches[name] = { openTime: c.openTime, closeTime: c.closeTime, chairs: c.chairs, closedDays: [...c.closedDays] };
+    else c.branches[name] = { openTime: c.openTime, closeTime: c.closeTime, closedDays: [...c.closedDays] };
   }
 
   preset(kind: 'jumma' | 'namaz' | 'lunch') {
@@ -262,7 +276,7 @@ export class TimingPage {
     if (!b.start || !b.end || b.end <= b.start) return this.show('Enter the break start and end time (end must be after start).', true);
     if (c.breaks.length >= (this.maxBreaks())) return this.show('You have reached the limit of breaks.', true);
     c.breaks.push({ ...b, label: b.label.trim(), days: [...b.days] });
-    this.nb = blankBreak(); this.msg.set('');
+    this.nb = blankBreak(); this.show('Break added. Press "Save timing" at the bottom to apply it.', false);
   }
   private maxBreaks() { return 20; }
 
